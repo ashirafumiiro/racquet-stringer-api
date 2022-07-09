@@ -9,6 +9,12 @@ const errorHandler = require("./controllers/errorController");
 
 var accounts = require('./routes/accountRouter');
 var racquets = require('./routes/racquetRouter');
+var shops = require('./routes/shopRouter');
+var orders = require('./routes/ordersRouter');
+var profiles = require('./routes/profileRouter');
+var strings = require('./routes/stringRouter');
+var auth = require('./routes/authRouter');
+var protect = require('./controllers/authController').protect;
 
 var app = express();
 
@@ -30,8 +36,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
+app.use('/auth', auth);
+app.use(protect)
 app.use('/accounts', accounts);
 app.use('/racquets', racquets);
+app.use('/shops', shops);
+app.use('/orders', orders);
+app.use('/profiles', profiles);
+app.use('/strings', strings);
+
 
 app.use("*", (req, res) => {
   res.status(404).json({
