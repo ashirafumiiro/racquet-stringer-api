@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const errorHandler = require("./controllers/errorController");
 const verifyApiKey = require('./middleware/check_api_key');
+const { checkMaintenanceMode } = require('./controllers/siteSettingsController');
 
 var accounts = require('./routes/accountRouter');
 var racquets = require('./routes/racquetRouter');
@@ -40,6 +41,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
 app.use(verifyApiKey);
+app.use('/api/v1/site-settings', settings)
+app.use(checkMaintenanceMode);
 app.use('/api/v1/auth', auth);
 app.use(protect)
 app.use('/api/v1/catalog', catalog)
@@ -49,7 +52,6 @@ app.use('/api/v1/shops', shops);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/profiles', profiles);
 app.use('/api/v1/strings', strings);
-app.use('/api/v1/site-settings', settings)
 
 
 app.use("*", (req, res) => {

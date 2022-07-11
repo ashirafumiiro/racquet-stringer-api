@@ -54,4 +54,33 @@ exports.getSettings = async function (req, res, next) {
     return setting;
   }
 
+exports.checkMaintenanceMode = async (req, res, next) => {
+    try {
+        const settings = await createIfNoExist();
+        if(settings.maintenanceMode === true){
+            return res.status(503).send({ message: "API under maintenance" });
+        }
+
+      next();
+    } catch (err) {
+      return res.status(500).send({
+        err: err.message,
+      });
+    }
+  };
   
+
+exports.ipLimitter = async (req, res, next) => {
+    try {
+        const settings = await createIfNoExist();
+        if(settings.maintenanceMode === true){
+            return res.status(503).send({ message: "API under maintenance" });
+        }
+
+      next();
+    } catch (err) {
+      return res.status(500).send({
+        err: err.message,
+      });
+    }
+  };
