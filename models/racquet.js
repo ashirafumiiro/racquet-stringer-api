@@ -18,6 +18,7 @@ const Schema = mongoose.Schema;
 var RacquetSchema = new Schema({
   uuid : {type: String, default: uuid},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: true},
+  shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: true},
   brand: {type: String},
   model: {type: String},
   image_url: {type: String},

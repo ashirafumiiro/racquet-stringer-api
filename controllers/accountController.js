@@ -68,11 +68,7 @@ exports.createAccount = [
    }
 ]
 
-exports.updateAccount = [
-    // Validate and sanitize fields.
-   body('full_name', 'full_name must not be empty.').trim().isLength({ min: 1 }).escape(),
-   body('email', 'email must not be empty.').trim().isLength({ min: 1 }).escape().isEmail(),
-
+exports.updateAccount = 
    async (req, res, next) => {
         try{
           const account = await Account.findByIdAndUpdate(req.params.id, req.body, {
@@ -89,8 +85,7 @@ exports.updateAccount = [
         catch(err){
           next(new AppError(err.message, 500));
         }       
-  }
-];
+  };
   
 exports.deleteAccount = async (req, res, next) => {
   try{

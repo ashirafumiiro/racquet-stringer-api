@@ -23,6 +23,7 @@ var StringSchema = new Schema({
   size: {type: Number},
   price: {type: Number},
   enabled: {type: Boolean},
+  shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: false},
   created: {type: Date},
   updated: {type: Date},
   hybrid_type: { enum:["Reel",'Packet','Both']},

@@ -68,13 +68,7 @@ exports.createRacquet = [
    }
 ]
 
-exports.updateRacquet = [
-    // Validate and sanitize fields.
-    body('brand', 'brand must not be empty.').trim().isLength({ min: 1 }).escape(),
-    body('model', 'model must not be empty.').trim().isLength({ min: 1 }).escape(),
-    body('brand', 'brand must not be empty.').trim().isLength({ min: 1 }).escape(),
-
-   async (req, res, next) => {
+exports.updateRacquet = async (req, res, next) => {
         try{
           const racquet = await Racquet.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -90,8 +84,7 @@ exports.updateRacquet = [
         catch(err){
           next(new AppError(err.message, 500));
         }       
-  }
-];
+};
   
 exports.deleteRacquet = async (req, res, next) => {
   try{

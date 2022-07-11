@@ -1,4 +1,5 @@
 var StringModel = require('../models/string');
+var Shop = require('../models/shop');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 
@@ -37,6 +38,7 @@ exports.createString = [
    body('model', 'model must not be empty.').trim().isLength({ min: 1 }).escape(),
    body('brand', 'brand must not be empty').trim().isLength({ min: 1 }).escape(),
    body('type', 'type must not be empty.').trim().isLength({ min: 1 }).escape(),
+   body('shop', 'shop must be a valid shop id.').trim().isLength({ min: 1 }).escape(),
 
    // Process request after validation and sanitization.
    async (req, res, next) => {
@@ -54,6 +56,8 @@ exports.createString = [
        else {
            // Data from body is valid, Save
            try {
+              const shop = await Shop.findById(req.body.shop).exec();
+              if(!shop) return next(new AppError("shop with specified id does not exist", 404))
               const newString = await StringModel.create({ ...req.body, created: Date.now() });
 
               res.status(200).json({
@@ -68,12 +72,7 @@ exports.createString = [
    }
 ]
 
-exports.updateString = [
-    // Validate and sanitize fields.
-   body('model', 'model must not be empty.').trim().isLength({ min: 1 }).escape(),
-   body('brand', 'brand must not be empty.').trim().isLength({ min: 1 }).escape(),
-
-   async (req, res, next) => {
+exports.updateString = async (req, res, next) => {
         try{
           const string = await StringModel.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
@@ -89,8 +88,7 @@ exports.updateString = [
         catch(err){
           next(new AppError(err.message, 500));
         }       
-  }
-];
+  };
   
 exports.deleteString = async (req, res, next) => {
   try{
