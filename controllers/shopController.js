@@ -5,7 +5,7 @@ const { body, validationResult } = require('express-validator');
 exports.shop_list = function(req, res, next) {
     Shop.find({})
     .sort({model : 1})
-    .populate('shop')
+    .populate('created_by')
     .exec(function (err, list_shops) {
       if (err) { return next(err); }
       //Successful, so render
@@ -70,11 +70,6 @@ exports.createShop = [
 ]
 
 exports.updateShop = [
-    // Validate and sanitize fields.
-    body('name', 'name must not be empty.').trim().isLength({ min: 1 }).escape(),
-    body('email', 'email must be a valid email address.').trim().isLength({ min: 1 }).escape().isEmail(),
-    body('created_by', 'created_by must not be empty.').trim().isLength({ min: 1 }).escape(),
-
    async (req, res, next) => {
         try{
           const shop = await Shop.findByIdAndUpdate(req.params.id, req.body, {
@@ -88,7 +83,7 @@ exports.updateShop = [
             shop: shop,
           });
         }
-        catch{
+        catch(err){
           next(new AppError(err.message, 500));
         }       
   }

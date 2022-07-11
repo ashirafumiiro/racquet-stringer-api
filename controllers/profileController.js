@@ -60,7 +60,7 @@ exports.createProfile = [
                   status: 'Success',
                   profile: newProfile,
               });
-           } catch (err) {
+           } catch(err) {
             next(new AppError(err.message, 500));
            }
            
@@ -85,7 +85,7 @@ exports.updateProfile = [
             profile: profile,
           });
         }
-        catch{
+        catch(err){
           next(new AppError(err.message, 500));
         }       
   }

@@ -23,13 +23,12 @@ var ServiceOrderSchema = new Schema({
   amount: {type: Number},
   payment_gateway_id: {type: Number},
   transaction_id: {type: Number},
-  status: String,
-  type: String, 
+  status: {type: String, enum: ["Pending", "Completed"]},
+  type: {type: String}, 
   delivery_type: String,
   delivery_shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: true},
-  delivery_address: {type: String},
+  delivery_address: {first_name: String, last_name: String, phone_number: String},
   delivery_date: {type: Date},
-  // accessories: {},
   created: {type: Date},
   updated: {type: Date}  
 }, opts);

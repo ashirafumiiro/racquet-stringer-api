@@ -6,6 +6,7 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const errorHandler = require("./controllers/errorController");
+const verifyApiKey = require('./middleware/check_api_key');
 
 var accounts = require('./routes/accountRouter');
 var racquets = require('./routes/racquetRouter');
@@ -14,6 +15,7 @@ var orders = require('./routes/ordersRouter');
 var profiles = require('./routes/profileRouter');
 var strings = require('./routes/stringRouter');
 var auth = require('./routes/authRouter');
+var catalog =  require('./routes/catalogRouter');
 var protect = require('./controllers/authController').protect;
 
 var app = express();
@@ -36,14 +38,16 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
 
-app.use('/auth', auth);
+app.use(verifyApiKey);
+app.use('/api/v1/auth', auth);
 app.use(protect)
-app.use('/accounts', accounts);
-app.use('/racquets', racquets);
-app.use('/shops', shops);
-app.use('/orders', orders);
-app.use('/profiles', profiles);
-app.use('/strings', strings);
+app.use('/api/v1/catalog', catalog)
+app.use('/api/v1/accounts', accounts);
+app.use('/api/v1/racquets', racquets);
+app.use('/api/v1/shops', shops);
+app.use('/api/v1/orders', orders);
+app.use('/api/v1/profiles', profiles);
+app.use('/api/v1/strings', strings);
 
 
 app.use("*", (req, res) => {

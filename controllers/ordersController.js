@@ -76,18 +76,18 @@ exports.updateOrder = [
 
    async (req, res, next) => {
         try{
-          const account = await Order.findByIdAndUpdate(req.params.id, req.body, {
+          const order = await Order.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
             })
-            if (!account) return next(new AppError("Order with that id not found", 404))
+            if (!order) return next(new AppError("Order with that id not found", 404))
         
             res.status(200).json({
             status: 'Success',
-            account: account,
+            account: order,
           });
         }
-        catch{
+        catch(err){
           next(new AppError(err.message, 500));
         }       
   }

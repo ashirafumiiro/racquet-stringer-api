@@ -87,7 +87,7 @@ exports.updateRacquet = [
             racquet: racquet,
           });
         }
-        catch{
+        catch(err){
           next(new AppError(err.message, 500));
         }       
   }

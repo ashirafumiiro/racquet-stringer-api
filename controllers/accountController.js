@@ -86,7 +86,7 @@ exports.updateAccount = [
             account: account,
           });
         }
-        catch{
+        catch(err){
           next(new AppError(err.message, 500));
         }       
   }
