@@ -16,6 +16,7 @@ var profiles = require('./routes/profileRouter');
 var strings = require('./routes/stringRouter');
 var auth = require('./routes/authRouter');
 var catalog =  require('./routes/catalogRouter');
+var settings = require('./routes/siteSettingsRouter');
 var protect = require('./controllers/authController').protect;
 
 var app = express();
@@ -48,6 +49,7 @@ app.use('/api/v1/shops', shops);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/profiles', profiles);
 app.use('/api/v1/strings', strings);
+app.use('/api/v1/site-settings', settings)
 
 
 app.use("*", (req, res) => {
