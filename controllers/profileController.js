@@ -2,6 +2,7 @@ var Profile = require('../models/profile');
 var Account = require('../models/account');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
+const { appendProfile } = require('../utils/google-sheet-write');
 
 exports.profile_list = function(req, res, next) {
     Profile.find({})
@@ -57,7 +58,8 @@ exports.createProfile = [
               const account = await Account.findById(req.body.account);
               if(!account) return next(new AppError("No account with that id is found", 404))
               const newProfile = await Profile.create({ ...req.body, created: Date.now() });
-
+              
+              await appendProfile("Created", newProfile);
               res.status(200).json({
                   status: 'Success',
                   profile: newProfile,

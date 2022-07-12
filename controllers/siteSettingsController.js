@@ -61,7 +61,7 @@ exports.checkMaintenanceMode = async (req, res, next) => {
             return res.status(503).send({ message: "API under maintenance" });
         }
 
-      next();
+        next();
     } catch (err) {
       return res.status(500).send({
         err: err.message,

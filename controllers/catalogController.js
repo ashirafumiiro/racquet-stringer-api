@@ -4,6 +4,8 @@ var Shop = require('../models/shop');
 var Racquet = require('../models/racquet');
 var Account = require('../models/account');
 
+const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
+
 const AppError = require("../utils/AppError");
 const { body, validationResult, query } = require('express-validator');
 
@@ -42,6 +44,7 @@ exports.registerBusiness = [
             });
 
             if(!newAccount) return next(new AppError("Failed to create account", 500))
+            await appendAccount("Created", newAccount);
             var shop = await Shop.create({
                 name: req.body.shop_name,
                 address: {
@@ -58,8 +61,9 @@ exports.registerBusiness = [
                 country: req.body.country
             });
             if(!shop) return next(new AppError("Failed to save user", 500))
+            await appendShop("Created", shop);
             shop = await Shop.findById(shop._id).populate("created_by");
-
+            
             res.status(200).json({
                 status: 'Success',
                 shop: shop,
@@ -138,7 +142,7 @@ exports.createOrder = [
             },
             created: new Date()
           });
-        
+          await appendOrder("Created", newOrder);
             res.status(200).json({
               status: 'Success',
               newOrder: newOrder,

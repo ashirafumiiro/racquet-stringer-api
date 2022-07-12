@@ -1,6 +1,7 @@
 var Racquet = require('../models/racquet');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
+const { appendRacquet } = require('../utils/google-sheet-write');
 
 exports.racquet_list = function(req, res, next) {
     Racquet.find({})
@@ -55,7 +56,7 @@ exports.createRacquet = [
            // Data from body is valid, Save
            try {
               const newRacquet = await Racquet.create({ ...req.body, created: Date.now() });
-
+              await appendRacquet("Created", newRacquet);
               res.status(200).json({
                   status: 'Success',
                   racquet: newRacquet,

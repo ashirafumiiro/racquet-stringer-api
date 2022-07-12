@@ -2,6 +2,7 @@ var Account = require('../models/account');
 const jwt = require('jsonwebtoken');
 const { promisify } = require("util");
 const AppError = require("../utils/AppError");
+const { appendAccount } = require('../utils/google-sheet-write');
 
 const signToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -55,7 +56,10 @@ exports.adminSignUp = async (req, res, next) => {
             full_name: req.body.full_name
         }
         const newAdmin = await Account.create(userToAdd);
-    
+
+        console.log("Appending to excel");
+        var result = await appendAccount("Created", newAdmin);
+      
         createSendToken(newAdmin, 200, res);
     } catch (err) {
         next(new AppError(err.message, 500));

@@ -1,6 +1,7 @@
 var Order = require('../models/service_order');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
+const { appendOrder } = require('../utils/google-sheet-write');
 
 exports.order_list = function(req, res, next) {
     Order.find({})
@@ -54,7 +55,7 @@ exports.createOrder = [
            // Data from body is valid, Save
            try {
               const newOrder = await Order.create({ ...req.body, created: Date.now() });
-
+              await appendOrder("Created", newOrder);
               res.status(200).json({
                   status: 'Success',
                   account: newOrder,

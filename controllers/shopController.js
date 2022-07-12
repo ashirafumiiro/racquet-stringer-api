@@ -1,6 +1,7 @@
 var Shop = require('../models/shop');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
+const { appendShop } = require('../utils/google-sheet-write');
 
 exports.shop_list = function(req, res, next) {
     Shop.find({})
@@ -56,7 +57,7 @@ exports.createShop = [
            try {
             // validate created by exist
               const newShop = await Shop.create({ ...req.body, created: Date.now() });
-
+              await appendShop("Created", newShop);
               res.status(200).json({
                   status: 'Success',
                   shop: newShop,
