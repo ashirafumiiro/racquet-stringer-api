@@ -44,7 +44,7 @@ app.use(verifyApiKey);
 app.use('/api/v1/site-settings', settings)
 app.use(checkMaintenanceMode);
 app.use('/api/v1/auth', auth);
-app.use(protect)
+//app.use(protect)
 app.use('/api/v1/catalog', catalog)
 app.use('/api/v1/accounts', accounts);
 app.use('/api/v1/racquets', racquets);

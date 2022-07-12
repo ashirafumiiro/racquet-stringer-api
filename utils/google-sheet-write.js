@@ -23,7 +23,7 @@ const sheet_id = process.env.GOOGLE_SHEET_ID;
     const valueInputOption = "USER_ENTERED";
     const {google} = require('googleapis');
     const values = _values.map(x => x.map(y => JSON.stringify(y)));
-    
+
   
     const auth = await getAuthenticated();
   
@@ -156,8 +156,10 @@ exports.appendProfile = async (operation, profile) =>{
 
 exports.appendOrder = async (operation, order) =>{
     try {
-        var result = await appendValues("Orders", [[operation, order._id, order.uuid, order.account, order.racquet, order.string, order.use_hybrid_settings, order.due_on, order.amount, order.payment_gateway_id, 
-            order.transaction_id, order.status, order.type, order. delivery_type, order.delivery_shop, order.delivery_address, order.delivery_date, order.created, order.updated ]])
+        var result = await appendValues("Orders", [[operation, order._id, order.uuid, order.account, order.racquet, order.string, 
+            order.use_hybrid_settings, order.due_on, order.amount, order.payment_gateway_id, 
+            order.transaction_id, order.status, order.type, order. delivery_type, order.delivery_shop, 
+            order.delivery_address, order.delivery_date, order.created, order.updated ]])
         console.log(`Append Order Result:${result.statusText}`); 
     } catch (err) {
         console.log("Erro in writing excel:", err);
