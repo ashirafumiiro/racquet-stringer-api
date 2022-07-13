@@ -107,3 +107,18 @@ exports.deleteShop = async (req, res, next) => {
   }
     
 };
+
+exports.get_enabled = function(req, res, next) {
+  Shop.find({stripe_status: "enabled"})
+  .sort({model : 1})
+  .populate('created_by')
+  .exec(function (err, list_shops) {
+    if (err) { return next(err); }
+    //Successful, so render
+    res.status(200).json({
+      status: 'Success',
+      results: list_shops.length,
+      list_shops: list_shops
+    });
+  });
+};

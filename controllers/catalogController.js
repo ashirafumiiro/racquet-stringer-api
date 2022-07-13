@@ -126,6 +126,8 @@ exports.createOrder = [
           const shop = await Shop.findById(req.body.shop_id).populate('created_by');
           if (!shop) return next(new AppError("Shop with that id not found", 404));
 
+          if (shop.stripe_status !== 'enabled') return next(new AppError("Shop with that is not enabled in stripe", 400));
+
           var newOrder = await Order.create({
             account: shop.created_by._id,
             racquet: req.body.racquet_id,

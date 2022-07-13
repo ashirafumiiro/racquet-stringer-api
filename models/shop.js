@@ -28,7 +28,10 @@ var ShopSchema = new Schema({
   created_by: {type: Schema.Types.ObjectId, ref: 'Account', required: true},
   etimated_delivery_time: {type: Number}, // in days
   labor_price: {type: Number}, 
-  allow_own_strings: {type: Boolean}
+  allow_own_strings: {type: Boolean},
+  stripe_customer_id: {type: String},
+  stripe_subscription_id: {type: String},
+  stripe_status: {type: String, enum: ["enabled", "disabled", "suspended"], default: "disabled"}
 }, opts);
 
 ShopSchema.virtual('id').get(function () {

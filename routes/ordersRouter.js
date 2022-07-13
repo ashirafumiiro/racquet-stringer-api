@@ -9,7 +9,7 @@ router.route('/:id')
     .delete(order_controller.deleteOrder);
 
 router.route('/')
-    .get(order_controller.order_list)
-    .post(order_controller.createOrder);
+    .get(order_controller.order_list);
+    // .post(order_controller.createOrder);
 
 module.exports = router;

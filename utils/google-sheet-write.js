@@ -103,7 +103,8 @@ function getAuthenticated() {
 exports.appendShop = async (operation, shop) =>{
     var result = await appendValues("Shops", [[operation, shop._id, shop.uuid, shop.name, shop.country, 
         shop.address, shop.email, shop.phone, shop.enabled, shop.created, shop.updated, shop.created_by, 
-        shop.etimated_delivery_time, shop.labor_price, shop.allow_own_strings]])
+        shop.etimated_delivery_time, shop.labor_price, shop.allow_own_strings,
+        shop.stripe_customer_id, shop.stripe_subscription_id, shop.stripe_status]])
     console.log(`Append Shop Result:${result.statusText}`);
 }
 
