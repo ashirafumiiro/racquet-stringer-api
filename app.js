@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 const errorHandler = require("./controllers/errorController");
 const verifyApiKey = require('./middleware/check_api_key');
 const { checkMaintenanceMode } = require('./controllers/siteSettingsController');
+const shopController = require('./controllers/shopController')
 
 var accounts = require('./routes/accountRouter');
 var racquets = require('./routes/racquetRouter');
@@ -36,6 +37,8 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use(logger('dev'));
+// requires raw unparsed body to work.
+app.post('/api/v1/stripe-update', express.raw({type: 'application/json'}), shopController.stripe_webhook);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())

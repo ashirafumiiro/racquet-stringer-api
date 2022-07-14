@@ -1,4 +1,5 @@
 var Shop = require('../models/shop');
+const stripe = require('stripe');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendShop } = require('../utils/google-sheet-write');
@@ -122,3 +123,63 @@ exports.get_enabled = function(req, res, next) {
     });
   });
 };
+
+exports.stripe_webhook = async (request, response) => {
+  const sig = request.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;
+  console.log('sig:', sig);
+  console.log('endpointSecret:', endpointSecret)
+  
+  let event;
+
+  try {
+    const key = request.query.key;
+    const id = request.query.id;
+    if(key != process.env.API_KEY){
+      throw 'Invalid API Key';
+    }
+    const shop = await Shop.findOne({uuid: id}).exec();
+    if(!shop) throw `No shop with id: ${id} found`;
+   
+
+    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    var stripe_status = shop.stripe_status;
+     // Handle the event
+    switch (event.type) {
+      case 'customer.subscription.created':
+        stripe_status = 'enabled';
+        console.log("customer.subscription.created raised");
+        break;
+      case 'customer.subscription.deleted':
+          stripe_status = 'disabled'
+          console.log("customer.subscription.deleted raised");
+          break;
+      case 'customer.subscription.updated':
+            console.log("customer.subscription.updated raised");
+            break;
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        // Then define and call a function to handle the event payment_intent.succeeded
+        break;
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    const updatedShop = await Shop.findByIdAndUpdate(shop._id, {stripe_status: stripe_status}, {
+      new: true,
+      runValidators: true
+      })
+      if (!updatedShop) return next(new AppError("Shop with that id not found", 404))
+
+  } catch (err) {
+    response.status(400).send(`Webhook Error: ${err.message}`);
+    console.log("Webhook error:", err);
+    return;
+  }
+
+
+
+  // Return a 200 response to acknowledge receipt of the event
+  response.send();
+}
