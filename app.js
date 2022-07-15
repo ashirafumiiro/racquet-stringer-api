@@ -1,6 +1,7 @@
 require('dotenv').config()
 var express = require('express');
 var path = require('path');
+const cors = require("cors");
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
@@ -36,6 +37,14 @@ mongoose.connect(mongoDB, { useNewUrlParser: true , useUnifiedTopology: true}, f
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+// cors
+app.use(
+  cors({
+      credentials: true,
+  })
+);
+app.all("*", cors());
+app.options("*", cors());
 app.use(logger('dev'));
 // requires raw unparsed body to work.
 app.post('/api/v1/stripe-update', express.raw({type: 'application/json'}), shopController.stripe_webhook);

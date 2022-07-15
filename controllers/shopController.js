@@ -126,10 +126,7 @@ exports.get_enabled = function(req, res, next) {
 
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;
-  console.log('sig:', sig);
-  console.log('endpointSecret:', endpointSecret)
-  
+  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
   let event;
 
   try {
