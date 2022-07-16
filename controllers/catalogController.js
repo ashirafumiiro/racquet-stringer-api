@@ -40,7 +40,7 @@ exports.registerBusiness = [
                  email: email,
                  password: req.body.password, 
                  created: Date.now(),
-                 full_name: req.body.first_name + req.body.last_name 
+                 full_name: req.body.first_name +' '+  req.body.last_name 
             });
 
             if(!newAccount) return next(new AppError("Failed to create account", 500))

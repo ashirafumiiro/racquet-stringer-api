@@ -4,6 +4,7 @@ var router = express.Router();
 var shop_controller = require('../controllers/shopController');
 
 router.get('/get-enabled', shop_controller.get_enabled);
+router.get('/user-shop/:id', shop_controller.get_user_shop);
 router.route('/:id')
     .get(shop_controller.getOneShop)
     .patch(shop_controller.updateShop)

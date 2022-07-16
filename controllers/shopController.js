@@ -124,6 +124,22 @@ exports.get_enabled = function(req, res, next) {
   });
 };
 
+
+exports.get_user_shop = function(req, res, next) {
+  Shop.findOne({created_by: req.params.id})
+  .populate('created_by')
+  .exec(function (err, shop) {
+    if (err) { return next(err); }
+
+    if(!shop) return next(new AppError('no shop found for that user id', 404))
+    //Successful, so render
+    res.status(200).json({
+      status: 'Success',
+      shop: shop
+    });
+  });
+};
+
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
