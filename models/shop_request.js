@@ -18,7 +18,7 @@ var ShopRequestSchema = new Schema({
   shop_name: {type: String, required: true},
   city: {type: String},
   state: {type: String}, 
-  phone: {type: Number, required: true},
+  phone: {type: String, required: true},
   search: {type: String},
   active: {type: Boolean, default: true},
   created: {type: Date}
