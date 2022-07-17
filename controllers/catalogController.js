@@ -3,6 +3,7 @@ var Strings = require('../models/string');
 var Shop = require('../models/shop');
 var Racquet = require('../models/racquet');
 var Account = require('../models/account');
+const { createToken } = require('../controllers/authController');
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -63,10 +64,19 @@ exports.registerBusiness = [
             if(!shop) return next(new AppError("Failed to save user", 500))
             await appendShop("Created", shop);
             shop = await Shop.findById(shop._id).populate("created_by");
+
+            const expirationTime = new Date(
+              Date.now() + process.env.JWT_EXPIRES_IN_HOURS * 60 * 60 * 1000
+            );
+            const expiresIn = process.env.JWT_EXPIRES_IN_HOURS * 60 * 60 * 1000;
+            const token = createToken(newAccount._id);
             
             res.status(200).json({
                 status: 'Success',
                 shop: shop,
+                expirationTime,
+                expiresIn,
+                token
               });
 
         }

@@ -112,3 +112,5 @@ exports.protect = async (req, res, next) => {
       );
     }
 };
+
+exports.createToken = signToken;
