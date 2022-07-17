@@ -104,3 +104,4 @@ dist
 .tern-port
 
 api.rest
+update_db.js

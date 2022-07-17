@@ -37,7 +37,7 @@ exports.registerBusiness = [
             const existing = await Account.findOne({email: email}).exec();
             console.log("Exiting:", existing);
             if (existing) return next(new AppError("Email already taken", 400))
-            const newAccount = await Account.create({
+            let newAccount = await Account.create({
                  email: email,
                  password: req.body.password, 
                  created: Date.now(),
@@ -45,7 +45,6 @@ exports.registerBusiness = [
             });
 
             if(!newAccount) return next(new AppError("Failed to create account", 500))
-            await appendAccount("Created", newAccount);
             var shop = await Shop.create({
                 name: req.body.shop_name,
                 address: {
@@ -61,7 +60,13 @@ exports.registerBusiness = [
                 email: email,
                 country: req.body.country
             });
-            if(!shop) return next(new AppError("Failed to save user", 500))
+            if(!shop) return next(new AppError("Failed to save shop", 500))
+            newAccount = await Account.findByIdAndUpdate(newAccount._id, {shop: shop._id}, {
+              new: true,
+              runValidators: true
+              });
+              
+            await appendAccount("Created", newAccount);
             await appendShop("Created", shop);
             shop = await Shop.findById(shop._id).populate("created_by");
 
