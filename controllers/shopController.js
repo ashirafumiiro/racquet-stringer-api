@@ -1,4 +1,5 @@
 var Shop = require('../models/shop');
+var ShopRequest = require('../models/shop_request');
 const stripe = require('stripe');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
@@ -196,3 +197,53 @@ exports.stripe_webhook = async (request, response) => {
   // Return a 200 response to acknowledge receipt of the event
   response.send();
 }
+
+exports.create_shop_request = [
+  // Validate and sanitize fields.
+  body('shop_name', 'shop_name must not be empty.').trim().isLength({ min: 1 }).escape(),
+  body('phone', 'phone must not be empty.').trim().isLength({ min: 1 }).escape(),
+
+  // Process request after validation and sanitization.
+  async (req, res, next) => {
+
+      // Extract the validation errors from a request.
+      const errors = validationResult(req);
+
+      // Create a Raquet object with escaped and trimmed data.
+
+      if (!errors.isEmpty()) {
+          // There are errors. Render form again with sanitized values/error messages.
+           var firstError = (errors.array())[0]
+          return next(new AppError(firstError.msg, 400));
+      }
+      else {
+          // Data from body is valid, Save
+          try {
+           // validate created by exist
+             const newShopRequest = await ShopRequest.create({ ...req.body, created: Date.now() });
+             await appendShop("Created", newShopRequest);
+             res.status(200).json({
+                 status: 'Success',
+                 shop_request: newShopRequest,
+             });
+          } catch (err) {
+           next(new AppError(err.message, 500));
+          }
+          
+      }
+  }
+];
+
+exports.shop_requests_list = function(req, res, next) {
+  ShopRequest.find({})
+  .sort({shop_name : 1})
+  .exec(function (err, requests_list) {
+    if (err) { return next(err); }
+    //Successful, so render
+    res.status(200).json({
+      status: 'Success',
+      results: requests_list.length,
+      shop_requests: requests_list
+    });
+  });
+};

@@ -5,6 +5,10 @@ var shop_controller = require('../controllers/shopController');
 
 router.get('/get-enabled', shop_controller.get_enabled);
 router.get('/user-shop/:id', shop_controller.get_user_shop);
+router.route('/shop-requests')
+    .get(shop_controller.shop_requests_list)
+    .post(shop_controller.create_shop_request);
+    
 router.route('/:id')
     .get(shop_controller.getOneShop)
     .patch(shop_controller.updateShop)
