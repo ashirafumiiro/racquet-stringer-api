@@ -1,9 +1,10 @@
 var Shop = require('../models/shop');
 var ShopRequest = require('../models/shop_request');
-const stripe = require('stripe');
+const stripe = require('stripe')
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendShop } = require('../utils/google-sheet-write');
+const stripe_utils = require('../utils/stripe-utils');
 
 exports.shop_list = function(req, res, next) {
     Shop.find({})
@@ -246,4 +247,36 @@ exports.shop_requests_list = function(req, res, next) {
       shop_requests: requests_list
     });
   });
+};
+
+exports.create_stripe_session = async function(req, res, next) {
+  try {
+    const id = req.body.shop_id;
+    var shop = await Shop.findById(id);
+    if(!shop) return next(new AppError("shop with that id does not exist", 404))
+    let stripe_id = shop.stripe_customer_id;
+    if(!stripe_id){
+      console.log('No stripe id, getting one')
+      var stripe_customer = await stripe_utils.create_customer(shop.name, shop.email, shop.uuid);
+      if(stripe_customer && stripe_customer.id){
+          shop = await Shop.findByIdAndUpdate(shop._id, {stripe_customer_id: stripe_customer.id},{
+            new: true,
+            runValidators: true
+            });
+          stripe_id = shop.stripe_customer_id;
+      }
+      else{
+        return next(new AppError('failed to register in stripe', 500));
+      } 
+      
+    }
+    var url = await stripe_utils.create_session(stripe_id);
+    res.status(200).json({
+      status: 'Success',
+      url: url
+    });
+    
+  } catch (err) {
+    next(new AppError(err.message, 500));
+  } 
 };

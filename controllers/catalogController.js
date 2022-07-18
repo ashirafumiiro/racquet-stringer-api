@@ -4,6 +4,7 @@ var Shop = require('../models/shop');
 var Racquet = require('../models/racquet');
 var Account = require('../models/account');
 const { createToken } = require('../controllers/authController');
+const stripe_utils = require('../utils/stripe-utils');
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -65,7 +66,15 @@ exports.registerBusiness = [
               new: true,
               runValidators: true
               });
-              
+            
+            // register in stripe
+            var stripe_customer = await stripe_utils.create_customer(shop.name, shop.email, shop.uuid);
+            if(stripe_customer && stripe_customer.id){
+                shop = await Shop.findByIdAndUpdate(shop._id, {stripe_customer_id: stripe_customer.id},{
+                  new: true,
+                  runValidators: true
+                  });
+            }
             await appendAccount("Created", newAccount);
             await appendShop("Created", shop);
             shop = await Shop.findById(shop._id).populate("created_by");
