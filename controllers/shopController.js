@@ -148,52 +148,63 @@ exports.stripe_webhook = async (request, response) => {
   let event;
 
   try {
-    const key = request.query.key;
-    const id = request.query.id;
-    if(key != process.env.API_KEY){
-      throw 'Invalid API Key';
-    }
-    const shop = await Shop.findOne({uuid: id}).exec();
-    if(!shop) throw `No shop with id: ${id} found`;
+    // const key = request.query.key;
+    // const id = request.query.id;
+    // if(key != process.env.API_KEY){
+    //   throw 'Invalid API Key';
+    // }
+    // const shop = await Shop.findOne({uuid: id}).exec();
+    // if(!shop) throw `No shop with id: ${id} found`;
    
 
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
-    var stripe_status = shop.stripe_status;
-     // Handle the event
+    // Handle the event
+    console.log('EVENT NAME:', event.type);
+    var data = event.data;
+    console.log('Webhook data:', data);
+    let stripe_status;
+    let customer_id;
     switch (event.type) {
-      case 'customer.subscription.created':
+      case 'payment_method.attached':
         stripe_status = 'enabled';
-        console.log("customer.subscription.created raised");
+        customer_id = data.object.customer;
+        console.log("Payment method attached for:", customer_id);
         break;
-      case 'customer.subscription.deleted':
-          stripe_status = 'disabled'
-          console.log("customer.subscription.deleted raised");
+      case 'payment_method.detached':
+          stripe_status = 'disabled';
+          customer_id = data.previous_attributes.customer;
+          console.log("payment method detached for:", customer_id);
           break;
       case 'customer.subscription.updated':
             console.log("customer.subscription.updated raised");
             break;
       case 'payment_intent.succeeded':
         const paymentIntent = event.data.object;
-        // Then define and call a function to handle the event payment_intent.succeeded
+        stripe_status = 'disabled';
+          customer_id = data.customer;
+          console.log("payment succeeded for:", customer_id);
         break;
       // ... handle other event types
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        console.log(`Unhandled event type`);
+    }
+    if(stripe_status && customer_id){ // only process if the 2 are defined in the handled events
+      var shop = await Shop.findOne({stripe_customer_id: customer_id}).exec();
+      if(!shop) throw 'No shop with id found';
+  
+      console.log('updating shop:', shop)
+      const updatedShop = await Shop.findByIdAndUpdate(shop._id, {stripe_status: stripe_status}, {
+        new: true,
+        runValidators: true
+        });
+      console.log('Updated: ', updatedShop);
     }
 
-    const updatedShop = await Shop.findByIdAndUpdate(shop._id, {stripe_status: stripe_status}, {
-      new: true,
-      runValidators: true
-      })
-      if (!updatedShop) return next(new AppError("Shop with that id not found", 404))
-
   } catch (err) {
-    response.status(400).send(`Webhook Error: ${err.message}`);
+    response.status(500).send(`Webhook Error: ${err.message}`);
     console.log("Webhook error:", err);
     return;
   }
-
-
 
   // Return a 200 response to acknowledge receipt of the event
   response.send();
