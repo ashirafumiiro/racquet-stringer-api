@@ -3,6 +3,7 @@ var router = express.Router();
 
 var order_controller = require('../controllers/ordersController');
 
+router.post('/create-checkout-session', order_controller.create_checkout_session);
 router.route('/:id')
     .get(order_controller.getOneOrder)
     .patch(order_controller.updateOrder)

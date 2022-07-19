@@ -35,3 +35,61 @@ exports.create_session = async (stripe_id) =>{
 
     return session.url;
 }
+
+exports.create_account = async (name, email, uuid) => {
+    const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'US',
+        email: email,
+        business_type: 'company',
+        // capabilities: {
+        //     card_payments: {requested: true},
+        //     transfers: {requested: true},
+        // },
+        company: {
+            name: name
+        },
+        metadata: {
+            uuid: uuid
+        }
+    });
+    return account;
+}
+
+exports.create_onboarding_link = async (account_id) =>{
+    const accountLink = await stripe.accountLinks.create({
+        account: account_id,
+        refresh_url: process.env.BASE_URL + '/',
+        return_url: process.env.BASE_URL + '/',
+        type: 'account_onboarding',
+      });
+    
+    return accountLink;  //use accountLink.url for url;
+}
+
+const get_account = async (account_id) =>{
+    const account = await stripe.accounts.retrieve(account_id);
+    return account;
+}
+
+exports.get_account = get_account;
+
+exports.create_checkout_session = async (price_id, destination) => {
+    const session = await stripe.checkout.sessions.create({
+        line_items: [{
+          price: price_id,
+          quantity: 1,
+        }],
+        mode: 'payment',
+        success_url: process.env.BASE_URL + '/success',
+        cancel_url: process.env.BASE_URL + '/failure',
+        payment_intent_data: {
+          application_fee_amount: 123,
+          transfer_data: {
+            destination: destination,
+          },
+        },
+      });
+
+      return session;
+}
