@@ -6,6 +6,7 @@ var shop_controller = require('../controllers/shopController');
 router.get('/get-enabled', shop_controller.get_enabled);
 router.get('/user-shop/:id', shop_controller.get_user_shop);
 router.post('/stripe-session', shop_controller.create_stripe_session);
+router.post('/subscription-session', shop_controller.create_subscription_session);
 
 router.route('/shop-requests')
     .get(shop_controller.shop_requests_list)

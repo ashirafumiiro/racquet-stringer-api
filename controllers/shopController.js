@@ -161,9 +161,9 @@ exports.stripe_webhook = async (request, response) => {
     // Handle the event
     console.log('EVENT NAME:', event.type);
     var data = event.data;
-    console.log('Webhook data:', data);
     let stripe_status;
     let customer_id;
+    /*
     switch (event.type) {
       case 'payment_method.attached':
         stripe_status = 'enabled';
@@ -188,6 +188,58 @@ exports.stripe_webhook = async (request, response) => {
       default:
         console.log(`Unhandled event type`);
     }
+    */
+    let subscription;
+    let status;
+    // Handle the event
+    switch (event.type) {
+      case 'customer.subscription.trial_will_end':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+
+        // Then define and call a method to handle the subscription trial ending.
+        // handleSubscriptionTrialEnding(subscription);
+        break;
+      case 'customer.subscription.deleted':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+        customer_id = subscription.customer;
+        stripe_status = 'disabled';
+        // Then define and call a method to handle the subscription deleted.
+        // handleSubscriptionDeleted(subscriptionDeleted);
+        break;
+      case 'customer.subscription.created':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log("subscription", subscription);
+        console.log(`Subscription status is ${status}.`);
+        // Then define and call a method to handle the subscription created.
+        // handleSubscriptionCreated(subscription);
+        break;
+      case 'customer.subscription.updated':
+        subscription = event.data.object;
+        status = subscription.status;
+        customer_id = subscription.customer;
+        if(status === 'active'){
+          stripe_status = 'enabled';
+        }
+        else{
+          stripe_status = 'disabled';
+        }
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+        // Then define and call a method to handle the subscription update.
+        // handleSubscriptionUpdated(subscription);
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
+    }
+
     if(stripe_status && customer_id){ // only process if the 2 are defined in the handled events
       var shop = await Shop.findOne({stripe_customer_id: customer_id}).exec();
       if(!shop) throw 'No shop with id found';
@@ -285,6 +337,39 @@ exports.create_stripe_session = async function(req, res, next) {
     res.status(200).json({
       status: 'Success',
       url: url
+    });
+    
+  } catch (err) {
+    next(new AppError(err.message, 500));
+  } 
+};
+
+
+exports.create_subscription_session = async function(req, res, next) {
+  try {
+    const id = req.body.shop_id;
+    var shop = await Shop.findById(id);
+    if(!shop) return next(new AppError("shop with that id does not exist", 404))
+    let stripe_id = shop.stripe_customer_id;
+    if(!stripe_id){
+      console.log('No stripe id, getting one')
+      var stripe_customer = await stripe_utils.create_customer(shop.name, shop.email, shop.uuid);
+      if(stripe_customer && stripe_customer.id){
+          shop = await Shop.findByIdAndUpdate(shop._id, {stripe_customer_id: stripe_customer.id},{
+            new: true,
+            runValidators: true
+            });
+          stripe_id = shop.stripe_customer_id;
+      }
+      else{
+        return next(new AppError('failed to register in stripe', 500));
+      } 
+      
+    }
+    var session = await stripe_utils.create_subscription_session(stripe_id);
+    res.status(200).json({
+      status: 'Success',
+      url: session.url
     });
     
   } catch (err) {

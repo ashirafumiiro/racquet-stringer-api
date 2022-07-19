@@ -93,3 +93,26 @@ exports.create_checkout_session = async (price_id, destination) => {
 
       return session;
 }
+
+
+exports.create_subscription_session = async (stripe_id) => {
+    var price_id = process.env.STRIPE_PRICE
+    const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        customer: stripe_id,
+        line_items: [
+            {
+                price: price_id,
+                quantity: 1
+            },
+        ],
+        success_url: process.env.BASE_URL + '/success',
+        cancel_url: process.env.BASE_URL + '/failure',
+      });
+
+      return session;
+};
+
+exports.get_shop_subscriptions = async (stripe_id) => {
+    
+}
