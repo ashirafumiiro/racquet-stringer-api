@@ -19,7 +19,7 @@ exports.order_list = function(req, res, next) {
 
 exports.getOneOrder = async function (req, res, next) {
   try{
-    const order = await Order.findById(req.params.id).populate('account'); 
+    const order = await Order.findById(req.params.id).populate('account').populate('string').populate('racquet'); 
     if (!order) return next(new AppError("order with that id not found", 404))
 
     res.status(200).json({

@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+const Counter = require('./counter');
 const uuid = require("uuid").v4();
 var opts = {
   toJSON: {
@@ -17,7 +18,6 @@ const Schema = mongoose.Schema;
 
 var ServiceOrderSchema = new Schema({
   uuid: {type: String, default: uuid},
-  order_number: {type: Number},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: false},
   racquet: {type: Schema.Types.ObjectId, ref: 'Racquet', required: true},
   string: {type: Schema.Types.ObjectId, ref: 'String', required: true},
@@ -33,18 +33,13 @@ var ServiceOrderSchema = new Schema({
   delivery_address: {first_name: String, last_name: String, phone_number: String},
   delivery_date: {type: Date},
   created: {type: Date},
-  updated: {type: Date}  
+  updated: {type: Date},
+  order_number: {type: Number, unique: true}  
 }, opts);
 
 ServiceOrderSchema.virtual('id').get(function () {
   return '' + this._id;
 });
-
-var CounterSchema = new Schema({
-  //_id: {type: String, required: true},
-  seq: { type: Number, default: 0 }
-});
-var counter = mongoose.model('counter', CounterSchema);
 
 ServiceOrderSchema.pre("save", async function (next) {
   const currentDate = new Date();
@@ -53,17 +48,18 @@ ServiceOrderSchema.pre("save", async function (next) {
     next();
   }
   else{
-    var doc = this;
-    let count = await counter.findOne({});
-    if(!count){
-      count = await counter.create({seq: 1});
+    console.log('saving order_number ....')
+    let count_obj = await Counter.findOne({});
+    if(!count_obj){
+      count_obj = await Counter.create({seq: 1});
     }
-    counter.findByIdAndUpdate({_id: count._id}, {$inc: { seq: 1} }, function(error, counter)   {
-      if(error)
-          return next(error);
-      doc.order_number = counter.seq;
-      next();
-  });
+    let count = count_obj.seq;
+    this.order_number = count;
+    const modified = await Counter.findByIdAndUpdate(count_obj._id, {seq: ++count}, {
+      new: true,
+      runValidators: true
+      });
+      next()
   }
 });
 
