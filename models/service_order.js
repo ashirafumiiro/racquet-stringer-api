@@ -17,6 +17,7 @@ const Schema = mongoose.Schema;
 
 var ServiceOrderSchema = new Schema({
   uuid: {type: String, default: uuid},
+  order_number: {type: Number},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: false},
   racquet: {type: Schema.Types.ObjectId, ref: 'Racquet', required: true},
   string: {type: Schema.Types.ObjectId, ref: 'String', required: true},
@@ -39,10 +40,31 @@ ServiceOrderSchema.virtual('id').get(function () {
   return '' + this._id;
 });
 
+var CounterSchema = new Schema({
+  //_id: {type: String, required: true},
+  seq: { type: Number, default: 0 }
+});
+var counter = mongoose.model('counter', CounterSchema);
+
 ServiceOrderSchema.pre("save", async function (next) {
   const currentDate = new Date();
   this.updated = currentDate;
-  next();
+  if(this.order_number){
+    next();
+  }
+  else{
+    var doc = this;
+    let count = await counter.findOne({});
+    if(!count){
+      count = await counter.create({seq: 1});
+    }
+    counter.findByIdAndUpdate({_id: count._id}, {$inc: { seq: 1} }, function(error, counter)   {
+      if(error)
+          return next(error);
+      doc.order_number = counter.seq;
+      next();
+  });
+  }
 });
 
 module.exports = mongoose.model('ServiceOrder', ServiceOrderSchema);
