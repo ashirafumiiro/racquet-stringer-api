@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 const uuid = require("uuid").v4();
 const bcrypt = require('bcrypt');
+const crypto = require("crypto");
 
 
 var opts = {
@@ -34,7 +35,9 @@ var AccountSchema = new Schema(
     enabled : {type: Boolean},
     created : {type: Date},
     updated : {type: Date},
-    shop :{type: Schema.Types.ObjectId, ref: 'Shop', required: false}
+    shop :{type: Schema.Types.ObjectId, ref: 'Shop', required: false},
+    passwordResetToken: String,
+    passwordResetExpires: Date,
   }, opts
 );
 
@@ -54,6 +57,21 @@ AccountSchema.pre("save", async function (next) {
 
 AccountSchema.methods.correctPassword = async function (candidatePassword, adminPassword) {
   return await bcrypt.compare(candidatePassword, adminPassword);
+};
+
+AccountSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
 };
 
 module.exports = mongoose.model('Account', AccountSchema);

@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const { promisify } = require("util");
 const AppError = require("../utils/AppError");
 const { appendAccount } = require('../utils/google-sheet-write');
+const crypto = require("crypto");
+const Email = require('../utils/email');
 
 const signToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -66,8 +68,6 @@ exports.adminSignUp = async (req, res, next) => {
     }
   };
   
-
-
 exports.protect = async (req, res, next) => {
     // 1) Getting token and check of it's there
     let token;
@@ -114,3 +114,70 @@ exports.protect = async (req, res, next) => {
 };
 
 exports.createToken = signToken;
+
+
+exports.forgotPassword = async (req, res, next) => {
+  var user;
+  try {
+    user = await Account.findOne({ email: req.body.email });
+    if (!user) {
+      return next(new AppError("There is no account with email address.", 404));
+    }
+
+    const resetToken = user.createPasswordResetToken();
+    user = await user.save({ validateBeforeSave: false });
+    
+    console.log("user is", user);
+
+    const resetURL = `${process.env.BASE_URL}/reset-password/${resetToken}`;
+    const subject = "Reset Password";
+    const message = "Request for password reset";
+
+    await new Email(user, subject, message).sendPasswordReset(resetURL);
+
+    res.status(200).json({
+      status: "success",
+      message: "Token sent to email!",
+    });
+  } catch (err) {
+    console.log(err);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError("There was an error sending the email. Try again later!"),
+      500
+    );
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  try {
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await Account.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return next(new AppError("Token is invalid or has expired", 400));
+    }
+    user.password = req.body.password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    createSendToken(user, 200, res);
+  } catch (err) {
+    console.log(err);
+    return next(
+      new AppError("Unable to perform action. Try again later!"),
+      500
+    );
+  }
+};

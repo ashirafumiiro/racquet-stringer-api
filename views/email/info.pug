@@ -1,0 +1,17 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p A new file has been uploaded for the course unit you're enrolled to: #{courseUnit} for academic year: #{academic_year} 
+  p Document name: #{custom_name}
+    table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+      tbody
+       tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${downloadURL}`, target='_blank') View document
+   
+

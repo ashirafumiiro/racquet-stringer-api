@@ -1,0 +1,18 @@
+extends baseEmail
+
+block content
+  p Hi #{firstName},
+  p Email verification is required to complete signup process on gpa elevator.
+  p Please click the button below to verify your account.
+  p Note that this link is valid for one hour. After the time limit has expired, you will have to resubmit the request for account verification.
+
+  table.btn.btn-primary(role='presentation', border='0', cellpadding='0', cellspacing='0')
+    tbody
+      tr
+        td(align='left')
+          table(role='presentation', border='0', cellpadding='0', cellspacing='0')
+            tbody
+              tr
+                td
+                  a(href=`${url}`, target='_blank') Verify your Account
+  p If you did not make this request, please contact Support and ignore this email!
