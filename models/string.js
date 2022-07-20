@@ -26,7 +26,7 @@ var StringSchema = new Schema({
   shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: false},
   created: {type: Date},
   updated: {type: Date},
-  hybrid_type: { enum:["Reel",'Packet','Both']},
+  hybrid_type: { type: String, enum:["Reel",'Packet','Both']},
   in_stock: {type: Boolean},
   tension: {type: Number}
 }, opts);
