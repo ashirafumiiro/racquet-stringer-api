@@ -31,7 +31,6 @@ class Email {
     };
     try {
         let response = await this.transporter.sendMail(mailOptions);
-        console.log('mail res:', response);
     } catch (err) {
       console.log("error sending email", err);
       new AppError("failed to send email", 403);

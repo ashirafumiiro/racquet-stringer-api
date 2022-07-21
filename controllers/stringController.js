@@ -37,6 +37,7 @@ exports.getOneString = async function (req, res, next) {
 exports.createString = [
    // Validate and sanitize fields.
    body('model', 'model must not be empty.').trim().isLength({ min: 1 }).escape(),
+   body('name', 'name must not be empty.').trim().isLength({ min: 1 }).escape(),
    body('brand', 'brand must not be empty').trim().isLength({ min: 1 }).escape(),
    body('type', 'type must not be empty.').trim().isLength({ min: 1 }).escape(),
    body('shop', 'shop must be a valid shop id.').trim().isLength({ min: 1 }).escape(),

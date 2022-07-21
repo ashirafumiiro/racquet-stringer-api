@@ -26,7 +26,7 @@ var ServiceOrderSchema = new Schema({
   amount: {type: Number},
   payment_gateway_id: {type: Number},
   transaction_id: {type: Number},
-  status: {type: String, enum: ["Pending", "Completed"]},
+  status: {type: String, enum: ["Pending", "Processing", "Completed"]},
   type: {type: String}, 
   delivery_type: String,
   delivery_shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: true},

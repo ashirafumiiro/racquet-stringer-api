@@ -5,6 +5,8 @@ const AppError = require("../utils/AppError");
 const { appendAccount } = require('../utils/google-sheet-write');
 const crypto = require("crypto");
 const Email = require('../utils/email');
+const OTP = require('../models/otp');
+
 
 const signToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -115,7 +117,6 @@ exports.protect = async (req, res, next) => {
 
 exports.createToken = signToken;
 
-
 exports.forgotPassword = async (req, res, next) => {
   var user;
   try {
@@ -181,3 +182,109 @@ exports.resetPassword = async (req, res, next) => {
     );
   }
 };
+const emailBody1 = `
+  <div>
+    <p>Hey, you attempted to create an order at React Pass<p />
+    <br/>
+  <p>In this email, you'll find a one-time password that can be used to confirm your email.<p />
+  <p>Thanks for using React Pass</p> 
+  <p>One-time password: <b>`;
+
+const emailBody2 = `
+  </b> <p/>
+  <br/>
+  <p>- Admin <p />
+  <p>p.s. please don't reply to this email, nobody checks it!  </p> 
+  </div>`;
+
+exports.sendOTP =  async (req, res, next) => {
+    try {
+      const { email } = req.body;
+  
+      let entry = await OTP.findOne({ email: email });
+      const newOTP = Math.floor(Math.random() * 1000000);
+      if (!entry) {
+        entry = await OTP.create({
+          email: email,
+          otp: newOTP
+        });
+      }
+      else{
+        entry = await OTP.findOneAndUpdate(
+          { email: email },
+          { otp: newOTP },
+          {
+            new: true,
+          }
+        );
+      }
+
+      let subject = "Confirm Email";
+      let user = {
+        email: email,
+        full_name: ''
+      };
+      await new Email(user, '', '').send(emailBody1 + newOTP + emailBody2, subject);
+  
+      setTimeout(async () => {
+        try {
+          await OTP.findOneAndUpdate(
+            { email: email },
+            { otp: 0 },
+            {
+              new: true,
+            }
+          );
+          console.log('OTP expired');
+        } catch (err) {
+          console.log(err);
+        }
+        
+      }, 1000 * 200);
+
+      return res.send({
+        status: "success",
+        message: "OTP has been sent to mail. Check your mail and enter the otp. It will reset in 200 seconds.",
+      });
+
+    } catch (err) {
+      next(new AppError(err.message, 500));
+    }
+  };
+
+
+exports.verify_otp = async (req, res) => {
+    try {
+      const { otp, email } = req.body;
+      let otp_int = parseInt(otp);
+      let entry = await OTP.findOne({ email });
+  
+      if (!entry) {
+        res.status(404).send({
+          err: `Email address: ${email} not found.`,
+        });
+      }
+  
+      if (entry.otp == otp_int) {
+        entry = await OTP.findOneAndUpdate(
+          { email },
+          {otp: 0},
+          { new: true }
+        );
+
+        return res.send({
+          status: "success",
+          message: `successfully verified`,
+        });
+      } else {
+        return res.status(400).send({
+          msg: "OTP incorrect.",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).send({
+        err: err.message,
+      });
+    }
+  };
