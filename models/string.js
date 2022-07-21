@@ -17,6 +17,7 @@ const Schema = mongoose.Schema;
 
 var StringSchema = new Schema({
   uuid: {type: String, default: uuid},
+  name: {type: String, required: true, default: 'N/A'},
   type: {type: String},
   brand: {type: String},
   model: {type: String},
