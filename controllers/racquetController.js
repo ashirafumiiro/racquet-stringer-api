@@ -111,7 +111,8 @@ exports.deleteRacquet = async (req, res, next) => {
 
 exports.getOneByQrCode = async function (req, res, next) {
   try{
-    const racquet = await Racquet.findOne({qr_code: req.params.code}).populate('account'); 
+    const racquet = await Racquet.findOne({qr_code: req.params.code}).populate('shop').populate('mains.string_id')
+                            .populate('crosses.string_id'); ; 
     if (!racquet) return next(new AppError("racquet with that qr_code not found", 404))
 
     res.status(200).json({
