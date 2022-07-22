@@ -20,7 +20,8 @@ exports.racquet_list = function(req, res, next) {
 
 exports.getOneRacquet = async function (req, res, next) {
   try{
-    const racquet = await Racquet.findById(req.params.id).populate('account'); 
+    const racquet = await Racquet.findById(req.params.id).populate('shop').populate('mains.string_id')
+                            .populate('crosses.string_id'); 
     if (!racquet) return next(new AppError("racquet with that id not found", 404))
 
     res.status(200).json({

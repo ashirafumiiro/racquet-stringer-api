@@ -9,7 +9,6 @@ exports.create_customer = async (name, email, uuid) =>{
             payment_method: 'pm_card_visa',
             invoice_settings: {
                 default_payment_method: 'pm_card_visa',
-
               }
         });
         return customer;
@@ -106,7 +105,7 @@ exports.create_subscription_session = async (stripe_id) => {
                 quantity: 1
             },
         ],
-        success_url: process.env.BASE_URL + '/success',
+        success_url: process.env.BASE_URL + '/inventory?active=payment&status=sucess',
         cancel_url: process.env.BASE_URL + '/failure',
       });
 

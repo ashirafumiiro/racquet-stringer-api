@@ -120,10 +120,10 @@ exports.editShopSettings = async (req, res, next) => {
 
 exports.createOrder = [
     // Validate and sanitize fields.
-    body('string_id', 'string_id must not be empty.').trim().isLength({ min: 5 }).withMessage("string_id too short").escape(),
+    body('email', 'email must be a valid email address.').trim().isLength({ min: 2 }).withMessage("string_id too short").escape().isEmail(),
     body('racquet_id', 'racquet_id must not be empty.').trim().isLength({ min: 5 }).withMessage("racquet_id too short").escape(),
     body('shop_id', 'shop_id must not be empty.').trim().isLength({ min: 5 }).withMessage("shop_id too short").escape(),
-    body('firs_name', 'firs_name must not be empty.').trim().isLength({ min: 1 }).escape(),
+    body('first_name', 'first_name must not be empty.').trim().isLength({ min: 1 }).escape(),
     body('last_name', 'last_name must not be empty.').trim().isLength({ min: 1 }).escape(),
     body('phone_number', 'phone_number must not be empty.').trim().isLength({ min: 4 }).withMessage("phone_number too short").escape(),
 
@@ -141,28 +141,58 @@ exports.createOrder = [
 
         try{
 
-          const string = await Strings.findById(req.body.string_id);
-            if (!string) return next(new AppError("String with that id not found", 404))
-
-          const racquet = await Racquet.findById(req.body.racquet_id);
+          const racquet = await Racquet.findById(req.body.racquet_id).populate('mains.string_id')
+                                    .populate('crosses.string_id');
           if (!racquet) return next(new AppError("Racquet with that id not found", 404))
 
           const shop = await Shop.findById(req.body.shop_id).populate('created_by');
           if (!shop) return next(new AppError("Shop with that id not found", 404));
 
           if (shop.stripe_status !== 'enabled') return next(new AppError("Shop with that is not enabled in stripe", 400));
+          const tax = shop.tax || 0;
+          const labor_price = shop.labor_price;
+          let mains_string = racquet.mains.string_id;
+          let string_cost = 0;
+          if(mains_string.hybrid_type == "Reel"){
+            string_cost = mains_string.price / 2;
+          }
+          else{
+            string_cost = mains_string.price;
+          }
+          let use_hybrid_settings = req.body.use_hybrid_settings || false;
+
+          if(use_hybrid_settings){
+            let crosses_string = racquet.crosses.string_id;
+            if(crosses_string.hybrid_type == "Reel"){
+              string_cost += crosses_string.price / 2;
+            }
+            else{
+              string_cost += crosses_string.price;
+            }
+          }
+
+          if(!shop.estimated_delivery_time){
+              throw 'No estimated delivery_time for shop';
+          }
+
+          let due_on = new Date();
+          due_on.setDate(due_on.getDate() + shop.estimated_delivery_time);
+          console.log("Due on:", due_on)
+          
+          let amount = string_cost + tax + labor_price;
+          console.log('Order Cost items:', {string_cost, tax, labor_price});
 
           var newOrder = await Order.create({
-            account: shop.created_by._id,
+            shop: shop._id,
             racquet: req.body.racquet_id,
-            string: req.body.string_id,
-            use_hybrid_settings: req.body.use_hybrid_settings || false,
-            due_on: req.body.due_on,
-            amount: req.body.amount,
+            use_hybrid_settings: use_hybrid_settings,
+            due_on: due_on,
+            amount: amount,
             status: "Pending",
             delivery_shop: req.body.shop_id,
             delivery_address: {
-              first_name: req.body.first_name, 
+              first_name: req.body.first_name,
+              email: req.body.email, 
               last_name: req.body.last_name, 
               phone_number: req.body.phone_number
             },
@@ -203,27 +233,27 @@ exports.getOrders = async function (req, res, next) {
         next(new AppError(err.message, 500));
     }
   }
+  
+exports.getInventory = async function (req, res, next) {
+  try{
+    console.log('shop_id', req.params.id);
+    const shop = await Shop.findById(req.params.id);
+    if(!shop) next(new AppError("a shop with the specified id does not exist"));
+    let model = req.params.search || '';
+    var strings_query = Strings.find(); 
+    if(req.query.search){
+      strings_query = Strings.find({model: req.query.search});
+    }
+    const strings = await strings_query;
 
-  
-  exports.getInventory = async function (req, res, next) {
-    try{
-      console.log('shop_id', req.params.id);
-      const shop = await Shop.findById(req.params.id);
-      if(!shop) next(new AppError("a shop with the specified id does not exist"));
-      let model = req.params.search || '';
-      var strings_query = Strings.find(); 
-      if(req.query.search){
-        strings_query = Strings.find({model: req.query.search});
-      }
-      const strings = await strings_query;
-  
-      res.status(200).json({
-          status: 'Success',
-          results: strings.length,
-          inventory: strings,
-      });
-    }
-    catch(err){
-        next(new AppError(err.message, 500));
-    }
-  };
+    res.status(200).json({
+        status: 'Success',
+        results: strings.length,
+        inventory: strings,
+    });
+  }
+  catch(err){
+    next(new AppError(err.message, 500));
+  }
+};
+

@@ -148,15 +148,6 @@ exports.stripe_webhook = async (request, response) => {
   let event;
 
   try {
-    // const key = request.query.key;
-    // const id = request.query.id;
-    // if(key != process.env.API_KEY){
-    //   throw 'Invalid API Key';
-    // }
-    // const shop = await Shop.findOne({uuid: id}).exec();
-    // if(!shop) throw `No shop with id: ${id} found`;
-   
-
     event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
     // Handle the event
     console.log('EVENT NAME:', event.type);
@@ -243,9 +234,13 @@ exports.stripe_webhook = async (request, response) => {
     if(stripe_status && customer_id){ // only process if the 2 are defined in the handled events
       var shop = await Shop.findOne({stripe_customer_id: customer_id}).exec();
       if(!shop) throw 'No shop with id found';
+      var update_data = {stripe_status: stripe_status};
+      if(subscription.id){
+        update_data.stripe_subscription_id = subscription.id;
+      }
   
       console.log('updating shop:', shop)
-      const updatedShop = await Shop.findByIdAndUpdate(shop._id, {stripe_status: stripe_status}, {
+      const updatedShop = await Shop.findByIdAndUpdate(shop._id, update_data, {
         new: true,
         runValidators: true
         });
