@@ -58,9 +58,11 @@ exports.createRacquet = [
            try {
               const newRacquet = await Racquet.create({ ...req.body, created: Date.now() });
               await appendRacquet("Created", newRacquet);
+              const racquet = await Racquet.findById(newRacquet._id).populate('mains.string_id')
+                    .populate('crosses.string_id');
               res.status(200).json({
                   status: 'Success',
-                  racquet: newRacquet,
+                  racquet: racquet,
               });
            } catch (err) {
             next(new AppError(err.message, 500));

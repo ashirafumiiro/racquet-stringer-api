@@ -307,7 +307,7 @@ exports.shop_requests_list = function(req, res, next) {
   });
 };
 
-exports.create_stripe_session = async function(req, res, next) {
+exports.create_stripe_dashboard_session = async function(req, res, next) {
   try {
     const id = req.body.shop_id;
     var shop = await Shop.findById(id);
@@ -361,6 +361,25 @@ exports.create_subscription_session = async function(req, res, next) {
       } 
       
     }
+    var session = await stripe_utils.create_subscription_session(stripe_id);
+    res.status(200).json({
+      status: 'Success',
+      url: session.url
+    });
+    
+  } catch (err) {
+    next(new AppError(err.message, 500));
+  } 
+};
+
+exports.create_onboarding_session =  async function(req, res, next) {
+  try {
+    const id = req.body.shop_id;
+    var shop = await Shop.findById(id);
+    if(!shop) return next(new AppError("shop with that id does not exist", 404))
+    
+
+
     var session = await stripe_utils.create_subscription_session(stripe_id);
     res.status(200).json({
       status: 'Success',
