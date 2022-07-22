@@ -32,7 +32,8 @@ var RacquetSchema = new Schema({
   grip_hand: {type: String},
   created: {type: Date},
   updated: {type: Date},
-  sport: { type: String, enum: ['Tennis', 'Squash', 'Badminton', 'Other']}
+  sport: { type: String, enum: ['Tennis', 'Squash', 'Badminton', 'Other']},
+  owner: {type: String, default: ''}
 }, opts);
 
 RacquetSchema.virtual('id').get(function () {
