@@ -160,7 +160,6 @@ exports.createOrder = [
           else{
             string_cost = mains_string.price;
           }
-          let use_hybrid_settings = req.body.use_hybrid_settings || false;
 
           let crosses_string = racquet.crosses.string_id;
           if(crosses_string.hybrid_type == "Reel"){
@@ -185,7 +184,6 @@ exports.createOrder = [
           var newOrder = await Order.create({
             shop: shop._id,
             racquet: req.body.racquet_id,
-            use_hybrid_settings: use_hybrid_settings,
             due_on: due_on,
             amount: amount,
             status: "Pending",

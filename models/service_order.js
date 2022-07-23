@@ -20,7 +20,6 @@ var ServiceOrderSchema = new Schema({
   uuid: {type: String, default: uuid},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: false},
   racquet: {type: Schema.Types.ObjectId, ref: 'Racquet', required: true},
-  use_hybrid_settings: {type: Boolean},
   due_on: {type: Date},
   amount: {type: Number},
   payment_gateway_id: {type: Number},
