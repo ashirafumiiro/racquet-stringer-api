@@ -63,7 +63,7 @@ exports.create_onboarding_link = async (account_id) =>{
         type: 'account_onboarding',
       });
     
-    return accountLink.url;  //use accountLink.url for url;
+    return accountLink;  //use accountLink.url for url;
 }
 
 const get_account = async (account_id) =>{
