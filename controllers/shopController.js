@@ -146,6 +146,7 @@ exports.get_user_shop = function(req, res, next) {
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
   const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
+  // const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
   let event;
 
   try {
@@ -158,6 +159,11 @@ exports.stripe_webhook = async (request, response) => {
 
     let subscription;
     let status;
+    let handle_account = false;
+    let handle_checkout = false;
+    let account_data;
+    let checkout_data;
+    let checkout_status; // completed, failed, succeeded
     // Handle the event
     switch (event.type) {
       case 'customer.subscription.trial_will_end':
@@ -165,9 +171,6 @@ exports.stripe_webhook = async (request, response) => {
         status = subscription.status;
         console.log(`Subscription status is ${status}.`);
         console.log("subscription", subscription);
-
-        // Then define and call a method to handle the subscription trial ending.
-        // handleSubscriptionTrialEnding(subscription);
         break;
       case 'customer.subscription.deleted':
         subscription = event.data.object;
@@ -176,8 +179,6 @@ exports.stripe_webhook = async (request, response) => {
         console.log("subscription", subscription);
         customer_id = subscription.customer;
         stripe_status = 'disabled';
-        // Then define and call a method to handle the subscription deleted.
-        // handleSubscriptionDeleted(subscriptionDeleted);
         break;
       case 'customer.subscription.created':
         subscription = event.data.object;
@@ -199,8 +200,24 @@ exports.stripe_webhook = async (request, response) => {
         }
         console.log(`Subscription status is ${status}.`);
         console.log("subscription", subscription);
-        // Then define and call a method to handle the subscription update.
-        // handleSubscriptionUpdated(subscription);
+        break;
+      case 'account.updated':
+        handle_account = true;
+        account_data = event.data.object;
+        break;
+      case 'checkout.session.completed':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        checkout_status = 'completed';
+        break;
+      case 'checkout.session.async_payment_succeeded':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        break;
+      case 'checkout.session.async_payment_failed':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        checkout_status = 'failed';
         break;
       default:
         // Unexpected event type
@@ -222,7 +239,13 @@ exports.stripe_webhook = async (request, response) => {
         });
       console.log('Updated: ', updatedShop);
     }
+    if(handle_account){
+      await handleAccount(account_data);
+    }
 
+    if(handle_checkout){
+      await handleCheckout(checkout_data, checkout_status);
+    }
   } catch (err) {
     response.status(500).send(`Webhook Error: ${err.message}`);
     console.log("Webhook error:", err);
@@ -383,3 +406,25 @@ exports.create_onboarding_session =  async function(req, res, next) {
     next(new AppError(err.message, 500));
   } 
 };
+
+async function handleCheckout(session, status){
+  console.log('Checkout Status:', status);
+  console.log('Data:', session);
+}
+
+async function handleAccount(account){
+  console.log('Handling Acoount data:');
+  const metadata = account.metadata;
+  uuid = metadata.uuid;
+  let stripe_account_enabled = account.charges_enabled;
+  let shop = await Shop.findOne({uuid: uuid});
+  if (!shop){
+    throw new Error('No shop with uuid found')
+  }
+  console.log('Updating shop:', shop._id);
+  shop = await Shop.findByIdAndUpdate(shop._id, {stripe_account_enabled}, {
+    new: true,
+    runValidators: true
+    });
+    console.log('Completed updating account');
+}
