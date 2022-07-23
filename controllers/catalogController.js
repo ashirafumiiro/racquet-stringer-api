@@ -6,6 +6,7 @@ var Account = require('../models/account');
 const { createToken } = require('../controllers/authController');
 const stripe_utils = require('../utils/stripe-utils');
 const ordersController = require('./ordersController');
+const Email = require('../utils/email');
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -197,6 +198,16 @@ exports.createOrder = [
             created: new Date()
           });
           await appendOrder("Created", newOrder);
+          let order_number = newOrder.order_number;
+          let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> hast been created for your shop and Pending payment. You can login to RacquetPass and veiw it</p>`;
+
+          let user = {
+            email: shop.email,
+            full_name: ''
+          };
+
+          let subject = "Order Creation Notification";
+          await new Email(user, '', '').send(email_body, subject);
 
           const order = await Order.findById(newOrder._id).populate('delivery_shop');
           const url = await ordersController.get_checkout_session(order);

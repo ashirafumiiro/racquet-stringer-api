@@ -1,10 +1,12 @@
 var Shop = require('../models/shop');
+var Order = require('../models/service_order');
 var ShopRequest = require('../models/shop_request');
 const stripe = require('stripe')
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendShop } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
+const Email = require('../utils/email');
 
 exports.shop_list = function(req, res, next) {
     Shop.find({})
@@ -213,6 +215,7 @@ exports.stripe_webhook = async (request, response) => {
       case 'checkout.session.async_payment_succeeded':
         handle_checkout = true;
         checkout_data = event.data.object;
+        checkout_status = 'succeeded';
         break;
       case 'checkout.session.async_payment_failed':
         handle_checkout = true;
@@ -409,7 +412,36 @@ exports.create_onboarding_session =  async function(req, res, next) {
 
 async function handleCheckout(session, status){
   console.log('Checkout Status:', status);
-  console.log('Data:', session);
+  const metadata = session.metadata;
+  const order_id = metadata.order_id;
+  if(status === 'completed' && session.payment_status === 'paid'){
+    status === 'succeeded';
+  }
+
+  if(status === 'succeeded'){
+    let order_status = 'Processing';
+    const order = await Order.findById(order_id).populate('delivery_shop'); 
+    if (!order) throw new Error("order with that id not found");
+    const shop = order.delivery_shop;
+    const email = shop.email;
+
+    const saved = await Order.findByIdAndUpdate(order._id, {status: 'Processing'}, {
+      new: true,
+      runValidators: true
+      });
+    var order_number = order.order_number;
+    console.log(`Completed payment for order:#${order_number}`);
+    // send email coz payment has been sent
+    let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> hast been paid for your shop. You can login to RacquetPass and veiw it</p>`;
+
+    let user = {
+      email: email,
+      full_name: ''
+    };
+    let subject = "Confirmation of order payment";
+    await new Email(user, '', '').send(email_body, subject);
+  }
+
 }
 
 async function handleAccount(account){
