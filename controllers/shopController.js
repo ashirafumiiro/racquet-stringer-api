@@ -312,7 +312,8 @@ exports.create_stripe_dashboard_session = async function(req, res, next) {
   try {
     const id = req.body.shop_id;
     var shop = await Shop.findById(id);
-    if(!shop) return next(new AppError("shop with that id does not exist", 404))
+    if(!shop) return next(new AppError("shop with that id does not exist", 404));
+    if(!shop.enabled) return next(new AppError("shop not enabled. Contact admin", 400));
     let stripe_id = shop.stripe_customer_id;
     if(!stripe_id){
       console.log('No stripe id, getting one')
@@ -345,8 +346,10 @@ exports.create_subscription_session = async function(req, res, next) {
   try {
     const id = req.body.shop_id;
     var shop = await Shop.findById(id);
-    if(!shop) return next(new AppError("shop with that id does not exist", 404))
+    if(!shop) return next(new AppError("shop with that id does not exist", 404));
     let stripe_id = shop.stripe_customer_id;
+    if(!shop.stripe_price_id) return next(new AppError("shop subscription price not set", 400));
+    if(!shop.enabled) return next(new AppError("shop not enabled. Contact admin", 400));
     if(!stripe_id){
       console.log('No stripe id, getting one')
       var stripe_customer = await stripe_utils.create_customer(shop.name, shop.email, shop.uuid);
@@ -362,7 +365,7 @@ exports.create_subscription_session = async function(req, res, next) {
       } 
       
     }
-    var session = await stripe_utils.create_subscription_session(stripe_id);
+    var session = await stripe_utils.create_subscription_session(stripe_id, shop.stripe_price_id);
     res.status(200).json({
       status: 'Success',
       url: session.url
@@ -378,10 +381,25 @@ exports.create_onboarding_session =  async function(req, res, next) {
     const id = req.body.shop_id;
     var shop = await Shop.findById(id);
     if(!shop) return next(new AppError("shop with that id does not exist", 404))
-    
+    let stripe_account_id = shop.stripe_account_id;
 
+    if(!shop.enabled) return next(new AppError("shop not enabled. Contact admin", 400));
+    if(!stripe_account_id){
+      console.log('No stripe id, getting one')
+      var stripe_account = await stripe_utils.create_account(shop.name, shop.email, shop.uuid);
+      if(stripe_account && stripe_account.id){
+          shop = await Shop.findByIdAndUpdate(shop._id, {stripe_account_id: stripe_account.id},{
+            new: true,
+            runValidators: true
+            });
+          stripe_account_id = shop.stripe_account_id;
+      }
+      else{
+        return next(new AppError('failed to register in stripe', 500));
+      } 
+    }
 
-    var session = await stripe_utils.create_subscription_session(stripe_id);
+    var session = await stripe_utils.create_onboarding_link(stripe_account_id);
     res.status(200).json({
       status: 'Success',
       url: session.url

@@ -63,7 +63,7 @@ exports.create_onboarding_link = async (account_id) =>{
         type: 'account_onboarding',
       });
     
-    return accountLink;  //use accountLink.url for url;
+    return accountLink.url;  //use accountLink.url for url;
 }
 
 const get_account = async (account_id) =>{
@@ -94,8 +94,7 @@ exports.create_checkout_session = async (price_id, destination) => {
 }
 
 
-exports.create_subscription_session = async (stripe_id) => {
-    var price_id = process.env.STRIPE_PRICE
+exports.create_subscription_session = async (stripe_id, price_id) => {
     const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         customer: stripe_id,

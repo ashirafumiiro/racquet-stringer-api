@@ -104,5 +104,9 @@ exports.deleteOrder = async (req, res, next) => {
 };
 
 exports.create_checkout_session = async (req, res, next) => {
-  
+  try {
+    
+  } catch (error) {
+    next(new AppError(err.message, 500));
+  }
 }
