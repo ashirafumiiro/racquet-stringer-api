@@ -41,10 +41,10 @@ exports.create_account = async (name, email, uuid) => {
         country: 'US',
         email: email,
         business_type: 'company',
-        // capabilities: {
-        //     card_payments: {requested: true},
-        //     transfers: {requested: true},
-        // },
+        capabilities: {
+            card_payments: {requested: true},
+            transfers: {requested: true},
+        },
         company: {
             name: name
         },
@@ -73,22 +73,29 @@ const get_account = async (account_id) =>{
 
 exports.get_account = get_account;
 
-exports.create_checkout_session = async (price_id, destination) => {
+exports.create_checkout_session = async (price, stripe_account, comission, metadata) => {
     const session = await stripe.checkout.sessions.create({
         line_items: [{
-          price: price_id,
+            price_data: {
+                currency: 'USD',
+                product_data: {
+                    name: 'Order Cost', 
+                    description: 'Total amount of the operation'
+                },
+                unit_amount: price
+            },
           quantity: 1,
         }],
         mode: 'payment',
+        metadata: metadata,
         success_url: process.env.BASE_URL + '/success',
         cancel_url: process.env.BASE_URL + '/failure',
         payment_intent_data: {
-          application_fee_amount: 123,
-          transfer_data: {
-            destination: destination,
-          },
-        },
-      });
+          application_fee_amount: comission,
+        }
+      },{
+        stripeAccount: stripe_account,
+    });
 
       return session;
 }
@@ -113,4 +120,15 @@ exports.create_subscription_session = async (stripe_id, price_id) => {
 
 exports.get_shop_subscriptions = async (stripe_id) => {
     
+}
+
+exports.accout_charges_enabled = async (stripe_account_id) =>{
+    try {
+        const account = await get_account(stripe_account_id);
+        if(account.charges_enabled)
+            return true;
+    } catch (err) {
+        throw err;
+    }
+    return false;
 }

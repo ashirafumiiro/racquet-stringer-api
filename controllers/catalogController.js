@@ -5,6 +5,7 @@ var Racquet = require('../models/racquet');
 var Account = require('../models/account');
 const { createToken } = require('../controllers/authController');
 const stripe_utils = require('../utils/stripe-utils');
+const ordersController = require('./ordersController');
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -120,7 +121,7 @@ exports.editShopSettings = async (req, res, next) => {
 
 exports.createOrder = [
     // Validate and sanitize fields.
-    body('email', 'email must be a valid email address.').trim().isLength({ min: 2 }).withMessage("string_id too short").escape().isEmail(),
+    body('email', 'email must be a valid email address.').trim().isLength({ min: 2 }).withMessage("email too short").escape().isEmail(),
     body('racquet_id', 'racquet_id must not be empty.').trim().isLength({ min: 5 }).withMessage("racquet_id too short").escape(),
     body('shop_id', 'shop_id must not be empty.').trim().isLength({ min: 5 }).withMessage("shop_id too short").escape(),
     body('first_name', 'first_name must not be empty.').trim().isLength({ min: 1 }).escape(),
@@ -161,15 +162,14 @@ exports.createOrder = [
           }
           let use_hybrid_settings = req.body.use_hybrid_settings || false;
 
-          if(use_hybrid_settings){
-            let crosses_string = racquet.crosses.string_id;
-            if(crosses_string.hybrid_type == "Reel"){
-              string_cost += crosses_string.price / 2;
-            }
-            else{
-              string_cost += crosses_string.price;
-            }
+          let crosses_string = racquet.crosses.string_id;
+          if(crosses_string.hybrid_type == "Reel"){
+            string_cost += crosses_string.price / 2;
           }
+          else{
+            string_cost += crosses_string.price;
+          }
+
 
           if(!shop.estimated_delivery_time){
               throw 'No estimated delivery_time for shop';
@@ -199,10 +199,13 @@ exports.createOrder = [
             created: new Date()
           });
           await appendOrder("Created", newOrder);
-            res.status(200).json({
-              status: 'Success',
-              newOrder: newOrder,
-            });
+
+          const order = await Order.findById(newOrder._id).populate('delivery_shop');
+          const url = await ordersController.get_checkout_session(order);
+          res.status(200).json({
+            status: 'Success',
+            url: url,
+          });
         }
         catch(err){
           next(new AppError(err.message, 500));

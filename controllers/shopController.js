@@ -155,32 +155,7 @@ exports.stripe_webhook = async (request, response) => {
     var data = event.data;
     let stripe_status;
     let customer_id;
-    /*
-    switch (event.type) {
-      case 'payment_method.attached':
-        stripe_status = 'enabled';
-        customer_id = data.object.customer;
-        console.log("Payment method attached for:", customer_id);
-        break;
-      case 'payment_method.detached':
-          stripe_status = 'disabled';
-          customer_id = data.previous_attributes.customer;
-          console.log("payment method detached for:", customer_id);
-          break;
-      case 'customer.subscription.updated':
-            console.log("customer.subscription.updated raised");
-            break;
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        stripe_status = 'disabled';
-          customer_id = data.customer;
-          console.log("payment succeeded for:", customer_id);
-        break;
-      // ... handle other event types
-      default:
-        console.log(`Unhandled event type`);
-    }
-    */
+
     let subscription;
     let status;
     // Handle the event

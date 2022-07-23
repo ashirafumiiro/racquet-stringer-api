@@ -32,6 +32,7 @@ var ShopSchema = new Schema({
   stripe_customer_id: {type: String},
   stripe_subscription_id: {type: String},
   stripe_account_id: {type: String, default: ''},
+  stripe_account_enabled: {type: Boolean, default: false},
   tax: {type: Number, default: 0},
   stripe_price_id: {type: String, default: ''},
   subscripiton_expiry: {type: Date},
