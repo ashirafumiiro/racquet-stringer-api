@@ -76,6 +76,7 @@ exports.createShop = [
 exports.updateShop = [
    async (req, res, next) => {
         try{
+           console.log('body',req.body);
           const shop = await Shop.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
