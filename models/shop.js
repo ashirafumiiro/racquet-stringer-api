@@ -22,7 +22,7 @@ var ShopSchema = new Schema({
   address: {street: {type: String}, city: {type: String}, state: {type: String}, zip_code: {type: Number}, apartment:{type: String}},
   email: {type: String, required: true},
   phone: {type: String},
-  enabled: {type: Boolean},
+  enabled: {type: Boolean, default: false},
   created: {type: Date},
   updated: {type: Date},
   created_by: {type: Schema.Types.ObjectId, ref: 'Account', required: true},

@@ -351,7 +351,6 @@ exports.create_subscription_session = async function(req, res, next) {
     if(!shop.stripe_price_id) return next(new AppError("shop subscription price not set", 400));
     if(!shop.enabled) return next(new AppError("shop not enabled. Contact admin", 400));
     if(!stripe_id){
-      console.log('No stripe id, getting one')
       var stripe_customer = await stripe_utils.create_customer(shop.name, shop.email, shop.uuid);
       if(stripe_customer && stripe_customer.id){
           shop = await Shop.findByIdAndUpdate(shop._id, {stripe_customer_id: stripe_customer.id},{
