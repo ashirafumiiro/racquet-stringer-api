@@ -122,7 +122,7 @@ exports.appendShop = async (operation, shop) =>{
 
 exports.appendAccount = async (operation, account) =>{
     try{
-        var result = await appendValues("account", [[operation, account._id,account.uuid, 
+        var result = await appendValues("accounts", [[operation, account._id,account.uuid, 
             account.full_name, account.email, account.password, account.address, account.country, account.phone,
              account.provider, account.role, account.enabled, account.created, account.updated, account.shop]]);
         console.log(`Append Account Result:${result.statusText}`);
