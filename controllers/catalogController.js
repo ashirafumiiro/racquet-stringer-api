@@ -252,9 +252,9 @@ exports.getInventory = async function (req, res, next) {
     const shop = await Shop.findById(req.params.id);
     if(!shop) next(new AppError("a shop with the specified id does not exist"));
     let model = req.params.search || '';
-    var strings_query = Strings.find(); 
+    var strings_query = Strings.find({shop: shop._id}); 
     if(req.query.search){
-      strings_query = Strings.find({model: req.query.search});
+      strings_query = Strings.find({shop: shop._id, model: req.query.search});
     }
     const strings = await strings_query;
 
