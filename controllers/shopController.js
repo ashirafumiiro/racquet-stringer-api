@@ -210,17 +210,6 @@ exports.stripe_webhook = async (request, response) => {
       case 'checkout.session.completed':
         handle_checkout = true;
         checkout_data = event.data.object;
-        checkout_status = 'completed';
-        break;
-      case 'checkout.session.async_payment_succeeded':
-        handle_checkout = true;
-        checkout_data = event.data.object;
-        checkout_status = 'succeeded';
-        break;
-      case 'checkout.session.async_payment_failed':
-        handle_checkout = true;
-        checkout_data = event.data.object;
-        checkout_status = 'failed';
         break;
       default:
         // Unexpected event type
@@ -247,7 +236,7 @@ exports.stripe_webhook = async (request, response) => {
     }
 
     if(handle_checkout){
-      await handleCheckout(checkout_data, checkout_status);
+      await handleCheckout(checkout_data);
     }
   } catch (err) {
     response.status(500).send(`Webhook Error: ${err.message}`);
@@ -410,22 +399,20 @@ exports.create_onboarding_session =  async function(req, res, next) {
   } 
 };
 
-async function handleCheckout(session, status){
-  console.log('Checkout Status:', status);
+async function handleCheckout(session){
+  let status = session.payment_status;
+  console.log('Checkout Payment Status:', status);
   const metadata = session.metadata;
   const order_id = metadata.order_id;
-  if(status === 'completed' && session.payment_status === 'paid'){
-    status === 'succeeded';
-  }
 
-  if(status === 'succeeded'){
+  if(status === 'paid'){
     let order_status = 'Processing';
     const order = await Order.findById(order_id).populate('delivery_shop'); 
     if (!order) throw new Error("order with that id not found");
     const shop = order.delivery_shop;
     const email = shop.email;
 
-    const saved = await Order.findByIdAndUpdate(order._id, {status: 'Processing'}, {
+    const saved = await Order.findByIdAndUpdate(order._id, {status: order_status}, {
       new: true,
       runValidators: true
       });

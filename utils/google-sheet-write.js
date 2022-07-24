@@ -2,6 +2,7 @@ require('dotenv').config()
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const axios = require('axios').default;
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 // The file token.json stores the user's access and refresh tokens, and is
@@ -18,7 +19,7 @@ const sheet_id = process.env.GOOGLE_SHEET_ID;
  * @param {(string[])[]} _values A 2d array of values to append.
  * @return {obj} spreadsheet information
  */
- async function appendValues(range, _values) {
+ async function appendValues2(range, _values) {
     const spreadsheetId = sheet_id;
     const valueInputOption = "USER_ENTERED";
     const {google} = require('googleapis');
@@ -46,6 +47,11 @@ const sheet_id = process.env.GOOGLE_SHEET_ID;
     }
 }
 
+async function appendValues(type, _values) {
+    let values = _values[0];
+    const response = await post_to_app_script(values, type);
+    return response;
+}
 
 function getAuthenticated() {
     return new Promise((resolve, reject) =>{
@@ -102,10 +108,11 @@ function getAuthenticated() {
 
 exports.appendShop = async (operation, shop) =>{
     try {
-        var result = await appendValues("Shops", [[operation, shop._id, shop.uuid, shop.name, shop.country, 
-            shop.address, shop.email, shop.phone, shop.enabled, shop.created, shop.updated, shop.created_by, 
+        var result = await appendValues("shop", [[operation, shop._id, shop.uuid, shop.name, shop.country, 
+            JSON.stringify(shop.address), shop.email, shop.phone, Number(shop.enabled), shop.created, shop.updated, shop.created_by, 
             shop.etimated_delivery_time, shop.labor_price, shop.allow_own_strings,
-            shop.stripe_customer_id, shop.stripe_subscription_id, shop.stripe_status]])
+            shop.stripe_customer_id, shop.stripe_subscription_id, shop.stripe_status,
+        shop.stripe_account_id, shop.stripe_price_id, shop.comission, shop.subscripiton_expiry, shop.tax]]);
         console.log(`Append Shop Result:${result.statusText}`);
     }  catch(err){
         console.log("Erro in writing excel:", err);
@@ -115,7 +122,7 @@ exports.appendShop = async (operation, shop) =>{
 
 exports.appendAccount = async (operation, account) =>{
     try{
-        var result = await appendValues("Accounts", [[operation, account._id,account.uuid, 
+        var result = await appendValues("account", [[operation, account._id,account.uuid, 
             account.full_name, account.email, account.password, account.address, account.country, account.phone,
              account.provider, account.role, account.enabled, account.created, account.updated, account.shop]]);
         console.log(`Append Account Result:${result.statusText}`);
@@ -128,7 +135,7 @@ exports.appendAccount = async (operation, account) =>{
 
 exports.appendRacquet = async (operation, racquet) =>{
     try {
-        var result = await appendValues("Racquets", [[operation, racquet._id,racquet.uuid,racquet.account,racquet.shop,
+        var result = await appendValues("racquet", [[operation, racquet._id,racquet.uuid,racquet.account,racquet.shop,
             racquet.brand,racquet.model,racquet.image_url,racquet.qr_code,racquet.mains,racquet.crosses,
             racquet.vibration_dampener,racquet.grip_brand,racquet.grip_model,racquet.grip_hand,racquet.created,racquet.updated,racquet.sport]])
         console.log(`Append Racquet Result:${result.statusText}`);
@@ -140,7 +147,7 @@ exports.appendRacquet = async (operation, racquet) =>{
 
 exports.appendString = async (operation, string) =>{
     try {
-        var result = await appendValues("Strings", [[operation, string._id, string.uuid, string.type, string.brand, string.model, string.size, string.price, string.enabled, string.shop, string.created, 
+        var result = await appendValues("string", [[operation, string._id, string.uuid, string.type, string.brand, string.model, string.size, string.price, string.enabled, string.shop, string.created, 
             string.updated, string.hybrid_type, string.in_stock, string.tension]])
         console.log(`Append String Result:${result.statusText}`);
     } catch (err) {
@@ -151,7 +158,7 @@ exports.appendString = async (operation, string) =>{
 
 exports.appendProfile = async (operation, profile) =>{
     try {
-        var result = await appendValues("Profiles", [[operation, profile._id,profile.uuid, profile.account, profile.birthday, profile.playing_level, profile.playing_hand, profile.playing_style, profile.hitting_style, 
+        var result = await appendValues("profile", [[operation, profile._id,profile.uuid, profile.account, profile.birthday, profile.playing_level, profile.playing_hand, profile.playing_style, profile.hitting_style, 
             profile.pro_player_style_twin, profile.created, profile.updated]])
         console.log(`Append Profile Result:${result.statusText}`);
     } catch (err) {
@@ -162,7 +169,7 @@ exports.appendProfile = async (operation, profile) =>{
 
 exports.appendOrder = async (operation, order) =>{
     try {
-        var result = await appendValues("Orders", [[operation, order._id, order.uuid, order.account, order.racquet, order.string, 
+        var result = await appendValues("order", [[operation, order._id, order.uuid, order.account, order.racquet, order.string, 
             order.use_hybrid_settings, order.due_on, order.amount, order.payment_gateway_id, 
             order.transaction_id, order.status, order.type, order. delivery_type, order.delivery_shop, 
             order.delivery_address, order.delivery_date, order.created, order.updated ]])
@@ -173,3 +180,22 @@ exports.appendOrder = async (operation, order) =>{
     
 }
 
+async function post_to_app_script(data, type) {
+    const url = process.env.APP_SCRIPT_URL;
+    let command = "add";
+    if(data[0] === "Updated"){
+        command = "update";
+    }
+    var data = {
+        command,
+        type,
+        data
+    }
+    var response = await axios.post(url, data);
+    return {
+        status: response.status,
+        statusText: response.statusText
+    }
+}
+
+exports.post_to_app_script = post_to_app_script;
