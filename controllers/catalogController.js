@@ -172,7 +172,7 @@ exports.createOrder = [
 
 
           if(!shop.estimated_delivery_time){
-              throw 'No estimated delivery_time for shop';
+              throw new Error('No estimated delivery_time for shop');
           }
 
           let due_on = new Date();
