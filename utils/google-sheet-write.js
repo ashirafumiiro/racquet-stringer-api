@@ -135,7 +135,7 @@ exports.appendAccount = async (operation, account) =>{
 
 exports.appendRacquet = async (operation, racquet) =>{
     try {
-        var result = await appendValues("racquet", [[operation, racquet._id,racquet.uuid,racquet.account,racquet.shop,
+        var result = await appendValues("racquet", [[operation, racquet._id,racquet.uuid,racquet.account,"removed",
             racquet.brand,racquet.model,racquet.image_url,racquet.qr_code,racquet.mains,racquet.crosses,
             racquet.vibration_dampener,racquet.grip_brand,racquet.grip_model,racquet.grip_hand,racquet.created,racquet.updated,racquet.sport]])
         console.log(`Append Racquet Result:${result.statusText}`);
