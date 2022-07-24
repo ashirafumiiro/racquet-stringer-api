@@ -235,7 +235,7 @@ exports.getOrders = async function (req, res, next) {
       }
       
       
-      const orders = await orders_query.populate("string").populate("racquet");
+      const orders = await orders_query.populate("racquet");
       res.status(200).json({
           status: 'Success',
           order: orders,
