@@ -20,7 +20,7 @@ exports.racquet_list = function(req, res, next) {
 
 exports.getOneRacquet = async function (req, res, next) {
   try{
-    const racquet = await Racquet.findById(req.params.id).populate('shop').populate('mains.string_id')
+    const racquet = await Racquet.findById(req.params.id).populate('mains.string_id')
                             .populate('crosses.string_id'); 
     if (!racquet) return next(new AppError("racquet with that id not found", 404))
 
@@ -111,7 +111,7 @@ exports.deleteRacquet = async (req, res, next) => {
 
 exports.getOneByQrCode = async function (req, res, next) {
   try{
-    const racquet = await Racquet.findOne({qr_code: req.params.code}).populate('shop').populate('mains.string_id')
+    const racquet = await Racquet.findOne({qr_code: req.params.code}).populate('mains.string_id')
                             .populate('crosses.string_id'); ; 
     if (!racquet) return next(new AppError("racquet with that qr_code not found", 404))
 
