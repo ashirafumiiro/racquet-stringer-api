@@ -84,7 +84,7 @@ exports.updateShop = [
             runValidators: true
             })
             if (!shop) return next(new AppError("Shop with that id not found", 404))
-        
+            await appendShop("Updated", shop);
             res.status(200).json({
             status: 'Success',
             shop: shop,
@@ -208,6 +208,14 @@ exports.stripe_webhook = async (request, response) => {
         account_data = event.data.object;
         break;
       case 'checkout.session.completed':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        break;
+        case 'checkout.session.async_payment_succeeded':
+          handle_checkout = true;
+          checkout_data = event.data.object;
+        break;
+      case 'checkout.session.async_payment_failed':
         handle_checkout = true;
         checkout_data = event.data.object;
         break;
