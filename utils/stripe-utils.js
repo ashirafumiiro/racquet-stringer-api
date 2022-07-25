@@ -75,7 +75,9 @@ exports.get_account = get_account;
 
 exports.create_checkout_session = async (price, stripe_account, comission, metadata) => {
     const orderId = metadata.order_id;
+    const email = metadata.client_email;
     const session = await stripe.checkout.sessions.create({
+        customer_email: email,
         line_items: [{
             price_data: {
                 currency: 'USD',

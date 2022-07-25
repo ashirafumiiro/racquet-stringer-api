@@ -147,8 +147,8 @@ exports.get_user_shop = function(req, res, next) {
 
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
-  // const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
+  // const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
+  const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
   let event;
 
   try {
@@ -414,12 +414,13 @@ async function handleCheckout(session){
   const metadata = session.metadata;
   const order_id = metadata.order_id;
 
-  if(status === 'paid'){
+  if(status === 'paid' && order_id){
     let order_status = 'Processing';
     const order = await Order.findById(order_id).populate('delivery_shop'); 
     if (!order) throw new Error("order with that id not found");
     const shop = order.delivery_shop;
     const email = shop.email;
+    const customer_email = order.delivery_address.email;
 
     const saved = await Order.findByIdAndUpdate(order._id, {status: order_status}, {
       new: true,
@@ -428,14 +429,12 @@ async function handleCheckout(session){
     var order_number = order.order_number;
     console.log(`Completed payment for order:#${order_number}`);
     // send email coz payment has been sent
-    let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> hast been paid for your shop. You can login to RacquetPass and veiw it</p>`;
-
-    let user = {
-      email: email,
-      full_name: ''
-    };
+    let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> has been paid for your shop. You can login to RacquetPass and veiw it</p>`;
     let subject = "Confirmation of order payment";
-    await new Email(user, '', '').send(email_body, subject);
+    let customer_email_body = `<p>Hello there, Payment for your order <strong>#${order_number}</strong> has been received. You will be notified when it is available for shipping</p>`;
+
+    await send_email(email, subject, email_body)
+    await send_email(customer_email, "Payment Received", customer_email_body)
   }
 
 }
@@ -457,4 +456,13 @@ async function handleAccount(account){
     });
     appendShop("Updated", shop);
     console.log('Completed updating account');
+}
+
+
+async function send_email(email, subject, body) {
+  let user = {
+    email: email,
+    full_name: ''
+  };
+  await new Email(user, '', '').send(body, subject);
 }

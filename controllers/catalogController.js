@@ -201,13 +201,9 @@ exports.createOrder = [
           let order_number = newOrder.order_number;
           let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> hast been created for your shop and Pending payment. You can login to RacquetPass and veiw it</p>`;
 
-          let user = {
-            email: shop.email,
-            full_name: ''
-          };
-
           let subject = "Order Creation Notification";
-          await new Email(user, '', '').send(email_body, subject);
+          await send_email(shop.email, subject, email_body)
+          await send_email(req.body.email, "Order Submited.", `<p>Hello there, Your order <strong>#${order_number}</strong> has been submitted. Complete payment to proceed.`)
 
           const order = await Order.findById(newOrder._id).populate('delivery_shop');
           const url = await ordersController.get_checkout_session(order);
@@ -235,7 +231,8 @@ exports.getOrders = async function (req, res, next) {
       }
       
       
-      const orders = await orders_query.populate("racquet");
+      const orders = await orders_query.populate("racquet").populate('racquet.mains.string_id')
+                            .populate('racquet.crosses.string_id');
       res.status(200).json({
           status: 'Success',
           order: orders,
@@ -269,3 +266,10 @@ exports.getInventory = async function (req, res, next) {
   }
 };
 
+async function send_email(email, subject, body) {
+  let user = {
+    email: email,
+    full_name: ''
+  };
+  await new Email(user, '', '').send(body, subject);
+}

@@ -1,13 +1,17 @@
 var Order = require('../models/service_order');
+var String = require('../models/string');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
 
 exports.order_list = function(req, res, next) {
-    Order.find({})
-    .sort({model : 1}).populate('racquet')
-    .populate('racquet.mains.string_id').populate('racquet.crosses.string_id')
+    var options = {
+      path: 'racquet.mains.string_id',
+      model: 'String'
+    };
+    Order.find({}).populate('racquet').populate('racquet.mains.string_id').populate('racquet.crosses.string_id')
+    .sort({model : 1})
     .exec(function (err, list_orders) {
       if (err) { return next(err); }
       //Successful, so render
@@ -24,10 +28,14 @@ exports.getOneOrder = async function (req, res, next) {
     const order = await Order.findById(req.params.id).populate('delivery_shop').populate('racquet')
                             .populate('racquet.mains.string_id').populate('racquet.crosses.string_id'); 
     if (!order) return next(new AppError("order with that id not found", 404))
+    var json = order.toJSON();
+
+    json.racquet.mains.string_id = (await String.findById(order.racquet.mains.string_id)).toJSON();
+    json.racquet.crosses.string_id = (await String.findById(order.racquet.crosses.string_id)).toJSON()
 
     res.status(200).json({
         status: 'Success',
-        order: order,
+        order: json,
     });
   }
   catch(err){
@@ -112,11 +120,12 @@ const get_checkout_session = async function(order){
       throw new Error("shop cannot receive payment");
     const stripe_account_enabled = await stripe_utils.accout_charges_enabled(shop.stripe_account_id)
     if(!stripe_account_enabled) throw new Error("shop cannot receive payment");
-
+    var client_email = order.delivery_address.email;
     const metadata = {
       order_id: order.id,
       order_number: order.order_number,
-      uuid: order.uuid
+      uuid: order.uuid,
+      client_email: client_email
     }
     var price = parseInt(''+ (order.amount*100))
     var session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id,shop.comission, metadata);
