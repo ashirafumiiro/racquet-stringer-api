@@ -238,6 +238,7 @@ exports.stripe_webhook = async (request, response) => {
         runValidators: true
         });
       console.log('Updated: ', updatedShop);
+      await appendShop("Updated", updatedShop);
     }
     if(handle_account){
       await handleAccount(account_data);
