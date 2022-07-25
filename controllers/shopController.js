@@ -147,8 +147,8 @@ exports.get_user_shop = function(req, res, next) {
 
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
-  // const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
-  const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
+  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
+  // const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
   let event;
 
   try {
