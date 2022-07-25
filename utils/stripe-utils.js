@@ -74,6 +74,7 @@ const get_account = async (account_id) =>{
 exports.get_account = get_account;
 
 exports.create_checkout_session = async (price, stripe_account, comission, metadata) => {
+    const orderId = metadata.order_id;
     const session = await stripe.checkout.sessions.create({
         line_items: [{
             price_data: {
@@ -88,8 +89,8 @@ exports.create_checkout_session = async (price, stripe_account, comission, metad
         }],
         mode: 'payment',
         metadata: metadata,
-        success_url: process.env.BASE_URL + '/success',
-        cancel_url: process.env.BASE_URL + '/failure',
+        success_url: process.env.BASE_URL + `/order/${orderId}?status=success`,
+        cancel_url: process.env.BASE_URL + `/order/${orderId}?status=fail`,
         payment_intent_data: {
           application_fee_amount: comission,
         }

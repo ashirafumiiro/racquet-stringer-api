@@ -16,7 +16,7 @@ var opts = {
 const Schema = mongoose.Schema;
 
 var ProfileSchema = new Schema({
-  uuid: {type: String, default: uuid},
+  uuid: {type: String, default: uuid, unique: true},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: true},
   birthday: {type: Date},
   playing_level: {type: String},

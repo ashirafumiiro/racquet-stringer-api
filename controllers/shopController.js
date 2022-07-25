@@ -147,8 +147,8 @@ exports.get_user_shop = function(req, res, next) {
 
 exports.stripe_webhook = async (request, response) => {
   const sig = request.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
-  // const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
+  // const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;  
+  const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
   let event;
 
   try {
@@ -444,6 +444,7 @@ async function handleAccount(account){
   const metadata = account.metadata;
   uuid = metadata.uuid;
   let stripe_account_enabled = account.charges_enabled;
+  console.log("Account.charges_enabled:", stripe_account_enabled);
   let shop = await Shop.findOne({uuid: uuid});
   if (!shop){
     throw new Error('No shop with uuid found')
@@ -453,5 +454,6 @@ async function handleAccount(account){
     new: true,
     runValidators: true
     });
+    appendShop("Updated", shop);
     console.log('Completed updating account');
 }

@@ -17,7 +17,7 @@ var opts = {
 const Schema = mongoose.Schema;
 
 var ServiceOrderSchema = new Schema({
-  uuid: {type: String, default: uuid},
+  uuid: {type: String, default: uuid, unique: true},
   account: {type: Schema.Types.ObjectId, ref: 'Account', required: false},
   racquet: {type: Schema.Types.ObjectId, ref: 'Racquet', required: true},
   due_on: {type: Date},

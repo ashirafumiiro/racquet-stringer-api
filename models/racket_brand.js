@@ -15,7 +15,7 @@ var opts = {
 const Schema = mongoose.Schema;
 
 var RacquetBrandSchema = new Schema({
-  name: {type: String, required: true},
+  name: {type: String, required: true, unique: true},
 }, opts);
 
 RacquetBrandSchema.virtual('id').get(function () {

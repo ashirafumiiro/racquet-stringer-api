@@ -22,7 +22,7 @@ const Schema = mongoose.Schema;
 
 var AccountSchema = new Schema(
   {
-    uuid : {type: String, default: uuid},
+    uuid : {type: String, default: uuid, unique: true},
     full_name :{type: String, required: true},
     email: {type: String, required: true, unique: true},
     password :{type: String},

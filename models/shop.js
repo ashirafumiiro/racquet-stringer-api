@@ -16,7 +16,7 @@ var opts = {
 const Schema = mongoose.Schema;
 
 var ShopSchema = new Schema({
-  uuid : {type: String, default: uuid},
+  uuid : {type: String, default: uuid, unique: true},
   name: {type: String, required: true},
   country: {type: String, required: true},
   address: {street: {type: String}, city: {type: String}, state: {type: String}, zip_code: {type: Number}, apartment:{type: String}},
