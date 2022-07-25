@@ -257,6 +257,118 @@ exports.stripe_webhook = async (request, response) => {
   response.send();
 }
 
+exports.stripe_webhook2 = async (request, response) => {
+  const sig = request.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_KEY_2;  
+  // const endpointSecret = 'whsec_121e9ee910789dee86995fbbc00b271dd672d233a114cd770f8bd97714c9888d'
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    // Handle the event
+    console.log('EVENT NAME:', event.type);
+    var data = event.data;
+    let stripe_status;
+    let customer_id;
+
+    let subscription;
+    let status;
+    let handle_account = false;
+    let handle_checkout = false;
+    let account_data;
+    let checkout_data;
+    let checkout_status; // completed, failed, succeeded
+    // Handle the event
+    switch (event.type) {
+      case 'customer.subscription.trial_will_end':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+        break;
+      case 'customer.subscription.deleted':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+        customer_id = subscription.customer;
+        stripe_status = 'disabled';
+        break;
+      case 'customer.subscription.created':
+        subscription = event.data.object;
+        status = subscription.status;
+        console.log("subscription", subscription);
+        console.log(`Subscription status is ${status}.`);
+        // Then define and call a method to handle the subscription created.
+        // handleSubscriptionCreated(subscription);
+        break;
+      case 'customer.subscription.updated':
+        subscription = event.data.object;
+        status = subscription.status;
+        customer_id = subscription.customer;
+        if(status === 'active'){
+          stripe_status = 'enabled';
+        }
+        else{
+          stripe_status = 'disabled';
+        }
+        console.log(`Subscription status is ${status}.`);
+        console.log("subscription", subscription);
+        break;
+      case 'account.updated':
+        handle_account = true;
+        account_data = event.data.object;
+        break;
+      case 'checkout.session.completed':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        break;
+        case 'checkout.session.async_payment_succeeded':
+          handle_checkout = true;
+          checkout_data = event.data.object;
+        break;
+      case 'checkout.session.async_payment_failed':
+        handle_checkout = true;
+        checkout_data = event.data.object;
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
+    }
+
+    if(stripe_status && customer_id){ // only process if the 2 are defined in the handled events
+      var shop = await Shop.findOne({stripe_customer_id: customer_id}).exec();
+      if(!shop) throw 'No shop with id found';
+      var update_data = {stripe_status: stripe_status};
+      if(subscription.id){
+        update_data.stripe_subscription_id = subscription.id;
+      }
+  
+      console.log('updating shop:', shop)
+      const updatedShop = await Shop.findByIdAndUpdate(shop._id, update_data, {
+        new: true,
+        runValidators: true
+        });
+      console.log('Updated: ', updatedShop);
+      await appendShop("Updated", updatedShop);
+    }
+    if(handle_account){
+      await handleAccount(account_data);
+    }
+
+    if(handle_checkout){
+      await handleCheckout(checkout_data);
+    }
+  } catch (err) {
+    response.status(500).send(`Webhook Error: ${err.message}`);
+    console.log("Webhook error:", err);
+    return;
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  response.send();
+}
+
 exports.create_shop_request = [
   // Validate and sanitize fields.
   body('shop_name', 'shop_name must not be empty.').trim().isLength({ min: 1 }).escape(),

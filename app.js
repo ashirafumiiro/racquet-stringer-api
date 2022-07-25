@@ -47,7 +47,8 @@ app.all("*", cors());
 app.options("*", cors());
 app.use(logger('dev'));
 // requires raw unparsed body to work.
-app.post('/api/v1/stripe-update', express.raw({type: 'application/json'}), shopController.stripe_webhook);
+app.post('/api/v1/stripe-update', express.raw({type: 'application/json'}), shopController.stripe_webhook); // for account
+app.post('/api/v1/stripe-update2', express.raw({type: 'application/json'}), shopController.stripe_webhook2); // for connected accounts
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser())
