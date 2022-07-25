@@ -4,7 +4,7 @@ var ShopRequest = require('../models/shop_request');
 const stripe = require('stripe')
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
-const { appendShop } = require('../utils/google-sheet-write');
+const { appendShop, appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
 const Email = require('../utils/email');
 
@@ -543,6 +543,7 @@ async function handleCheckout(session){
 
     await send_email(email, subject, email_body)
     await send_email(customer_email, "Payment Received", customer_email_body)
+    appendOrder('Updated', saved);
   }
 
 }
