@@ -207,18 +207,18 @@ exports.stripe_webhook = async (request, response) => {
         handle_account = true;
         account_data = event.data.object;
         break;
-      case 'checkout.session.completed':
-        handle_checkout = true;
-        checkout_data = event.data.object;
-        break;
-        case 'checkout.session.async_payment_succeeded':
-          handle_checkout = true;
-          checkout_data = event.data.object;
-        break;
-      case 'checkout.session.async_payment_failed':
-        handle_checkout = true;
-        checkout_data = event.data.object;
-        break;
+      // case 'checkout.session.completed':
+      //   handle_checkout = true;
+      //   checkout_data = event.data.object;
+      //   break;
+      //   case 'checkout.session.async_payment_succeeded':
+      //     handle_checkout = true;
+      //     checkout_data = event.data.object;
+      //   break;
+      // case 'checkout.session.async_payment_failed':
+      //   handle_checkout = true;
+      //   checkout_data = event.data.object;
+      //   break;
       default:
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);
@@ -244,9 +244,9 @@ exports.stripe_webhook = async (request, response) => {
       await handleAccount(account_data);
     }
 
-    if(handle_checkout){
-      await handleCheckout(checkout_data);
-    }
+    // if(handle_checkout){
+    //   await handleCheckout(checkout_data);
+    // }
   } catch (err) {
     response.status(500).send(`Webhook Error: ${err.message}`);
     console.log("Webhook error:", err);
@@ -268,19 +268,14 @@ exports.stripe_webhook2 = async (request, response) => {
     // Handle the event
     console.log('EVENT NAME:', event.type);
     var data = event.data;
-    let stripe_status;
-    let customer_id;
 
-    let subscription;
-    let status;
-    let handle_account = false;
     let handle_checkout = false;
     let account_data;
     let checkout_data;
     let checkout_status; // completed, failed, succeeded
     // Handle the event
     switch (event.type) {
-      case 'customer.subscription.trial_will_end':
+     /* case 'customer.subscription.trial_will_end':
         subscription = event.data.object;
         status = subscription.status;
         console.log(`Subscription status is ${status}.`);
@@ -319,6 +314,7 @@ exports.stripe_webhook2 = async (request, response) => {
         handle_account = true;
         account_data = event.data.object;
         break;
+        */
       case 'checkout.session.completed':
         handle_checkout = true;
         checkout_data = event.data.object;
@@ -335,7 +331,7 @@ exports.stripe_webhook2 = async (request, response) => {
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);
     }
-
+    /*
     if(stripe_status && customer_id){ // only process if the 2 are defined in the handled events
       var shop = await Shop.findOne({stripe_customer_id: customer_id}).exec();
       if(!shop) throw 'No shop with id found';
@@ -355,7 +351,7 @@ exports.stripe_webhook2 = async (request, response) => {
     if(handle_account){
       await handleAccount(account_data);
     }
-
+    */
     if(handle_checkout){
       await handleCheckout(checkout_data);
     }

@@ -4,6 +4,7 @@ const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
+const Email = require('../utils/email');
 
 exports.order_list = function(req, res, next) {
     var options = {
@@ -86,7 +87,7 @@ exports.updateOrder = async (req, res, next) => {
       runValidators: true
       })
       if (!order) return next(new AppError("Order with that id not found", 404))
-  
+      await appendOrder('Updated', order);
       res.status(200).json({
       status: 'Success',
       account: order,
@@ -213,3 +214,46 @@ exports.process_stripe_checkout_events = async (event, data) => {
 
 
 exports.get_checkout_session = get_checkout_session;
+
+exports.complete_order = async (req, res, next) =>{
+    try {
+      var order_id = req.body.order_id;
+      const order = await Order.findById(order_id).populate('delivery_shop'); 
+      if (!order) return next(new AppError("order with that id not found", 404));
+      if (order.status == "Pending") return next(new AppError("Pending order not supported", 400));
+      let action = req.body.action; // complete or cancel
+
+      var client_email = order.delivery_address.email;
+      var order_status = 'Processing'
+      if(action === 'complete' && order.status === 'Processing'){
+        order_status = 'Completed'
+        let email_body = `<p>Hello there, Your order <strong>#${order.order_number}</strong> has been completed and ready for pickup</p>`
+        await send_email(client_email, "Order Complete", email_body);
+      }
+      else if(action == 'reverse' && order.status === 'Completed'){
+        let email_body = `<p>Hello there, if you received an email about completion of order <strong>#${order.order_number}</strong>, please disregard it as the order is still being processed</p>`
+        await send_email(client_email, "Order still being processed", email_body);
+      }
+      const updated = await Order.findByIdAndUpdate(order_id, {status: order_status}, {
+        new: true,
+        runValidators: true
+      });
+      if (!updated) return next(new AppError("order with that id not found", 404));
+      await appendOrder('Updated', updated);
+      res.status(200).json({
+        status: 'Success',
+        order: updated,
+      });
+    } catch (err) {
+      next(new AppError(err.message, 500));
+    }
+
+}
+
+async function send_email(email, subject, body) {
+  let user = {
+    email: email,
+    full_name: ''
+  };
+  await new Email(user, '', '').send(body, subject);
+}
