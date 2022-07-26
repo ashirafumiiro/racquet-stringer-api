@@ -240,9 +240,14 @@ exports.complete_order = async (req, res, next) =>{
       });
       if (!updated) return next(new AppError("order with that id not found", 404));
       await appendOrder('Updated', updated);
+      var result = await Order.findById(order_id).populate('delivery_shop').populate('racquet'); 
+      var json = result.toJSON();
+
+      json.racquet.mains.string_id = (await String.findById(result.racquet.mains.string_id)).toJSON();
+      json.racquet.crosses.string_id = (await String.findById(result.racquet.crosses.string_id)).toJSON()
       res.status(200).json({
         status: 'Success',
-        order: updated,
+        order: json,
       });
     } catch (err) {
       next(new AppError(err.message, 500));

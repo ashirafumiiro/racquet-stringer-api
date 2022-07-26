@@ -225,9 +225,9 @@ exports.getOrders = async function (req, res, next) {
       const shop = await Shop.findById(req.params.id);
       if (!shop) return next(new AppError("shop with that id not found", 404))
 
-      var orders_query = Order.find(); 
+      var orders_query = Order.find({delivery_shop: shop._id}); 
       if(completed){
-        orders_query = Order.find({status: "Completed"});
+        orders_query = Order.find({delivery_shop: shop._id, status: "Completed"});
       }
       
       
