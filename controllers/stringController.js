@@ -3,6 +3,7 @@ var Shop = require('../models/shop');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendString } = require('../utils/google-sheet-write');
+const uuid = require("uuid").v4;
 
 exports.string_list = function(req, res, next) {
     StringModel.find({})
@@ -60,7 +61,7 @@ exports.createString = [
            try {
               const shop = await Shop.findById(req.body.shop).exec();
               if(!shop) return next(new AppError("shop with specified id does not exist", 404))
-              const newString = await StringModel.create({ ...req.body, created: Date.now() });
+              const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid()});
 
               await appendString("Created", newString);
               res.status(200).json({
