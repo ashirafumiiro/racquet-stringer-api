@@ -233,9 +233,25 @@ exports.getOrders = async function (req, res, next) {
       
       const orders = await orders_query.populate("racquet").populate('racquet.mains.string_id')
                             .populate('racquet.crosses.string_id');
+      
+      let curr = new Date();
+      let todayStart = todayDate = new Date(curr.getFullYear(), curr.getMonth(), curr.getDate()-1,0,0,0);
+      let todayEnd= todayDate = new Date(curr.getFullYear(), curr.getMonth(), curr.getDate(),0,0,0);
+
+      var first = curr.getDate() - curr.getDay(); // First day is the day of the month - the day of the week
+      var last = first + 6; // last day is the first day + 6
+
+      let weekStart = new Date(curr.setDate(first))
+      let weekEnd = new Date(curr.setDate(last))
+
+      let data ={
+        dueToday: orders.filter(order => order.due_on >= todayStart && order.due_on <= todayEnd),
+        dueThisWeek: orders.filter(order => order.due_on >= weekStart && orders.due_on <= weekEnd),
+        others: orders.filter(order => order.due_on > weekEnd ||order.due_on < weekStart)
+      }
       res.status(200).json({
           status: 'Success',
-          order: orders,
+          order: data,
       });
     }
     catch(err){
