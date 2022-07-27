@@ -115,7 +115,7 @@ exports.deleteShop = async (req, res, next) => {
 };
 
 exports.get_enabled = function(req, res, next) {
-  Shop.find({stripe_status: "enabled"})
+  Shop.find({stripe_status: "enabled", enabled: true, stripe_account_enabled: true})
   .sort({model : 1})
   .populate('created_by')
   .exec(function (err, list_shops) {
