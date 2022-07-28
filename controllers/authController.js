@@ -5,6 +5,7 @@ const AppError = require("../utils/AppError");
 const { appendAccount } = require('../utils/google-sheet-write');
 const crypto = require("crypto");
 const Email = require('../utils/email');
+const twilio_utils = require('../utils/twilio-utils');
 const OTP = require('../models/otp');
 
 
@@ -199,52 +200,11 @@ const emailBody2 = `
 
 exports.sendOTP =  async (req, res, next) => {
     try {
-      const { email } = req.body;
-  
-      let entry = await OTP.findOne({ email: email });
-      const newOTP = Math.floor(Math.random() * 1000000);
-      if (!entry) {
-        entry = await OTP.create({
-          email: email,
-          otp: newOTP
-        });
-      }
-      else{
-        entry = await OTP.findOneAndUpdate(
-          { email: email },
-          { otp: newOTP },
-          {
-            new: true,
-          }
-        );
-      }
-
-      let subject = "Confirm Email";
-      let user = {
-        email: email,
-        full_name: ''
-      };
-      await new Email(user, '', '').send(emailBody1 + newOTP + emailBody2, subject);
-  
-      setTimeout(async () => {
-        try {
-          await OTP.findOneAndUpdate(
-            { email: email },
-            { otp: 0 },
-            {
-              new: true,
-            }
-          );
-          console.log('OTP expired');
-        } catch (err) {
-          console.log(err);
-        }
-        
-      }, 1000 * 200);
-
+      const twilio_res = await twilio_utils.sendSMSOTP('+256705638261');
+      console.log(twilio_res);
       return res.send({
         status: "success",
-        message: "OTP has been sent to mail. Check your mail and enter the otp. It will reset in 200 seconds.",
+        message: "OTP has been sent to phone. Check your messages and enter the otp",
       });
 
     } catch (err) {
@@ -255,23 +215,12 @@ exports.sendOTP =  async (req, res, next) => {
 
 exports.verify_otp = async (req, res) => {
     try {
-      const { otp, email } = req.body;
-      let otp_int = parseInt(otp);
-      let entry = await OTP.findOne({ email });
-  
-      if (!entry) {
-        res.status(404).send({
-          err: `Email address: ${email} not found.`,
-        });
-      }
-  
-      if (entry.otp == otp_int) {
-        entry = await OTP.findOneAndUpdate(
-          { email },
-          {otp: 0},
-          { new: true }
-        );
+      const { otp, phone } = req.body;
 
+      const otp_res = await twilio_utils.verifySMSOTP(phone, otp);
+  
+      if (otp_res.status == "approved") {
+        
         return res.send({
           status: "success",
           message: `successfully verified`,
