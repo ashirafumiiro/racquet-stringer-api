@@ -200,7 +200,7 @@ const emailBody2 = `
 
 exports.sendOTP =  async (req, res, next) => {
     try {
-      const twilio_res = await twilio_utils.sendSMSOTP('+256705638261');
+      const twilio_res = await twilio_utils.sendSMSOTP(req.body.phone);
       console.log(twilio_res);
       return res.send({
         status: "success",
