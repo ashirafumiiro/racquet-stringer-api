@@ -13,8 +13,9 @@ class Email {
         pass: process.env.EMAIL_PASSWORD,
       }
     });
+    const from_email = process.env.EMAIL_USER;
     this.firstName = recipient.full_name;
-    this.from = "admin@racquetpass.com";
+    this.from = from_email;
     this.to = recipient.email;
     this.subject = subject;
     this.text = text_message;
