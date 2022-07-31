@@ -112,7 +112,7 @@ exports.appendShop = async (operation, shop) =>{
             JSON.stringify(shop.address), shop.email, shop.phone, Number(shop.enabled), shop.created, shop.updated, shop.created_by, 
             shop.etimated_delivery_time, shop.labor_price, shop.allow_own_strings,
             shop.stripe_customer_id, shop.stripe_subscription_id, shop.stripe_status,
-        shop.stripe_account_id, shop.stripe_price_id, shop.comission, shop.subscripiton_expiry, shop.tax]]);
+        shop.stripe_account_id, shop.stripe_price_id, shop.comission, shop.subscripiton_expiry, shop.tax, shop.stripe_account_enabled]]);
         console.log(`Append Shop Result:${result.statusText}`);
     }  catch(err){
         console.log("Erro in writing excel:", err);
