@@ -565,7 +565,7 @@ async function handleAccount(account){
     new: true,
     runValidators: true
     });
-    appendShop("Updated", shop);
+    await appendShop("Updated", shop);
     console.log('Completed updating account');
 }
 
