@@ -240,9 +240,9 @@ exports.stripe_webhook = async (request, response) => {
       console.log('Updated: ', updatedShop);
       await appendShop("Updated", updatedShop);
     }
-    if(handle_account){
-      await handleAccount(account_data);
-    }
+    // if(handle_account){
+    //   await handleAccount(account_data);
+    // }
 
     // if(handle_checkout){
     //   await handleCheckout(checkout_data);
@@ -310,11 +310,12 @@ exports.stripe_webhook2 = async (request, response) => {
         console.log(`Subscription status is ${status}.`);
         console.log("subscription", subscription);
         break;
+        */
       case 'account.updated':
         handle_account = true;
         account_data = event.data.object;
         break;
-        */
+        
       case 'checkout.session.completed':
         handle_checkout = true;
         checkout_data = event.data.object;
@@ -348,10 +349,11 @@ exports.stripe_webhook2 = async (request, response) => {
       console.log('Updated: ', updatedShop);
       await appendShop("Updated", updatedShop);
     }
+    */
     if(handle_account){
       await handleAccount(account_data);
     }
-    */
+    
     if(handle_checkout){
       await handleCheckout(checkout_data);
     }
