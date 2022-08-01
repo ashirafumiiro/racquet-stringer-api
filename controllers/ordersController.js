@@ -128,8 +128,10 @@ const get_checkout_session = async function(order){
       uuid: order.uuid,
       client_email: client_email
     }
-    var price = parseInt(''+ (order.amount*100))
-    var session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id,shop.comission, metadata);
+    console.log('Order details:', order);
+    const price = parseInt(''+ (order.amount*100))
+    const comission = parseInt(''+ ((shop.comission || 0) * 100))
+    const session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id,comission, metadata);
     
     return session.url;
 }
