@@ -270,6 +270,7 @@ exports.stripe_webhook2 = async (request, response) => {
     var data = event.data;
 
     let handle_checkout = false;
+    let handle_account = false;
     let account_data;
     let checkout_data;
     let checkout_status; // completed, failed, succeeded
