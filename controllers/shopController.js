@@ -555,10 +555,10 @@ async function handleCheckout(session){
 async function handleAccount(account){
   console.log('Handling Acoount data:');
   const metadata = account.metadata;
-  uuid = metadata.uuid;
+  let shop_uuid = metadata.uuid;
   let stripe_account_enabled = account.charges_enabled;
   console.log("Account.charges_enabled:", stripe_account_enabled);
-  let shop = await Shop.findOne({uuid: uuid});
+  let shop = await Shop.findOne({uuid: shop_uuid});
   if (!shop){
     throw new Error('No shop with uuid found')
   }
