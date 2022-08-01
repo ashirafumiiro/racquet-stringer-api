@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const Email = require('../utils/email');
 const twilio_utils = require('../utils/twilio-utils');
 const OTP = require('../models/otp');
+const uuid = require("uuid").v4;
 
 
 const signToken = (id) => {
@@ -58,7 +59,8 @@ exports.adminSignUp = async (req, res, next) => {
             email: req.body.email,
             password: req.body.password,
             role: 'Admin',
-            full_name: req.body.full_name
+            full_name: req.body.full_name,
+            uuid: uuid()
         }
         const newAdmin = await Account.create(userToAdd);
 

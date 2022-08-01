@@ -2,6 +2,7 @@ var Racquet = require('../models/racquet');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendRacquet } = require('../utils/google-sheet-write');
+const uuid = require("uuid").v4;
 
 exports.racquet_list = function(req, res, next) {
     Racquet.find({})
@@ -56,7 +57,7 @@ exports.createRacquet = [
        else {
            // Data from body is valid, Save
            try {
-              const newRacquet = await Racquet.create({ ...req.body, created: Date.now() });
+              const newRacquet = await Racquet.create({ ...req.body, created: Date.now(), uuid: uuid() });
               await appendRacquet("Created", newRacquet);
               const racquet = await Racquet.findById(newRacquet._id).populate('mains.string_id')
                     .populate('crosses.string_id');

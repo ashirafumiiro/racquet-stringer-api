@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const { appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
 const Email = require('../utils/email');
+const uuid = require("uuid").v4;
 
 exports.order_list = function(req, res, next) {
     var options = {
@@ -66,7 +67,7 @@ exports.createOrder = [
        else {
            // Data from body is valid, Save
            try {
-              const newOrder = await Order.create({ ...req.body, created: Date.now() });
+              const newOrder = await Order.create({ ...req.body, created: Date.now(), uuid: uuid() });
               await appendOrder("Created", newOrder);
               res.status(200).json({
                   status: 'Success',

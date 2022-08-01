@@ -2,6 +2,7 @@ var Account = require('../models/account');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendAccount} = require('../utils/google-sheet-write');
+const uuid = require("uuid").v4;
 
 exports.account_list = function(req, res, next) {
     Account.find({})
@@ -55,7 +56,7 @@ exports.createAccount = [
        else {
            // Data from body is valid, Save
            try {
-              const newAccount = await Account.create({ ...req.body, created: Date.now() });
+              const newAccount = await Account.create({ ...req.body, created: Date.now(), uuid: uuid() });
               await appendAccount("Created", newAccount);
               res.status(200).json({
                   status: 'Success',

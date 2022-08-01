@@ -7,6 +7,7 @@ const { createToken } = require('../controllers/authController');
 const stripe_utils = require('../utils/stripe-utils');
 const ordersController = require('./ordersController');
 const Email = require('../utils/email');
+const uuid = require("uuid").v4;
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -44,11 +45,13 @@ exports.registerBusiness = [
                  email: email,
                  password: req.body.password, 
                  created: Date.now(),
-                 full_name: req.body.first_name +' '+  req.body.last_name 
+                 full_name: req.body.first_name +' '+  req.body.last_name,
+                 uuid: uuid()
             });
 
             if(!newAccount) return next(new AppError("Failed to create account", 500))
             var shop = await Shop.create({
+                uuid: uuid(),
                 name: req.body.shop_name,
                 address: {
                     street: req.body.street, 
@@ -194,7 +197,8 @@ exports.createOrder = [
               last_name: req.body.last_name, 
               phone_number: req.body.phone_number
             },
-            created: new Date()
+            created: new Date(),
+            uuid: uuid()
           });
           await appendOrder("Created", newOrder);
           let order_number = newOrder.order_number;
