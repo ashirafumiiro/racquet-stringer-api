@@ -1,0 +1,12 @@
+extends baseEmail
+
+block content 
+    p
+      | Hello there, payment for order 
+      strong ##{order_number}
+      |  hast been recieved. You can login to RacquetPass and view the order status
+    .signature
+      p 
+      p
+      p Cheers,
+      p RacquetPass

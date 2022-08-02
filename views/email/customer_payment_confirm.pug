@@ -1,0 +1,12 @@
+extends baseEmail
+
+block content 
+    p
+      | Hello there, payment for your order 
+      strong ##{order_number}
+      |  hast been recieved. You will be notified when it is available for pickup.
+    .signature
+      p 
+      p
+      p Cheers,
+      p #{shop_name}

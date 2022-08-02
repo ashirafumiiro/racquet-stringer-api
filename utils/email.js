@@ -14,7 +14,7 @@ class Email {
       }
     });
     const from_email = process.env.EMAIL_USER;
-    this.firstName = recipient.full_name;
+    // this.firstName = recipient.full_name;
     this.from = from_email;
     this.to = recipient.email;
     this.subject = subject;
@@ -88,6 +88,45 @@ class Email {
     await this.send(html, "Verify Account");
   }
 
+  async shopOrderConfirm(order_number) {
+    const html = pug.renderFile(
+      `${__dirname}/../views/email/shop_order_confirm.pug`,
+      {
+        order_number
+      }
+    );
+    await this.send(html, "Order Creation Notification");
+  }
+
+  async shopOrderPayment(order_number) {
+    const html = pug.renderFile(
+      `${__dirname}/../views/email/shop_payment_confirm.pug`,
+      {
+        order_number
+      }
+    );
+    await this.send(html, "Confirmation of order payment");
+  }
+
+  async custormerOrderConfirm(shop_name, order_number) {
+    const html = pug.renderFile(
+      `${__dirname}/../views/email/customer_order_confirm.pug`,
+      {
+       shop_name, order_number
+      }
+    );
+    await this.send(html, "Order Submited");
+  }
+
+  async custormerOrderPyament(shop_name, order_number) {
+    const html = pug.renderFile(
+      `${__dirname}/../views/email/customer_payment_confirm.pug`,
+      {
+       shop_name, order_number
+      }
+    );
+    await this.send(html, "Payment Received");
+  }
 }
 
 module.exports = Email;

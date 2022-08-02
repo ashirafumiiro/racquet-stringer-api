@@ -1,0 +1,12 @@
+extends baseEmail
+
+block content 
+    p
+      | Hello there, your order 
+      strong ##{order_number}
+      |  hast been created successfully. Please complete payment to proceed.
+    .signature
+      p 
+      p
+      p Cheers,
+      p #{shop_name}

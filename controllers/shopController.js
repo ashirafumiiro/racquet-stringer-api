@@ -540,13 +540,11 @@ async function handleCheckout(session){
       });
     var order_number = order.order_number;
     console.log(`Completed payment for order:#${order_number}`);
-    // send email coz payment has been sent
-    let email_body = `<p>Hello there, an order <strong>#${order_number}</strong> has been paid for your shop. You can login to RacquetPass and veiw it</p>`;
-    let subject = "Confirmation of order payment";
-    let customer_email_body = `<p>Hello there, Payment for your order <strong>#${order_number}</strong> has been received. You will be notified when it is available for shipping</p>`;
 
-    await send_email(email, subject, email_body)
-    await send_email(customer_email, "Payment Received", customer_email_body)
+    // send email coz payment has been sent
+    await new Email({email: email}, '', '').shopOrderPayment(order_number);
+    await new Email({email: customer_email}, '', '').custormerOrderPyament(shop.name, order_number);
+
     appendOrder('Updated', saved);
   }
 
@@ -556,6 +554,7 @@ async function handleAccount(account){
   console.log('Handling Acoount data:');
   const metadata = account.metadata;
   let shop_uuid = metadata.uuid;
+  
   let stripe_account_enabled = account.charges_enabled;
   console.log("Account.charges_enabled:", stripe_account_enabled);
   let shop = await Shop.findOne({uuid: shop_uuid});
@@ -569,13 +568,4 @@ async function handleAccount(account){
     });
     await appendShop("Updated", shop);
     console.log('Completed updating account');
-}
-
-
-async function send_email(email, subject, body) {
-  let user = {
-    email: email,
-    full_name: ''
-  };
-  await new Email(user, '', '').send(body, subject);
 }
