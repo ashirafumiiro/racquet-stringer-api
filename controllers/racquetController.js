@@ -1,4 +1,5 @@
 var Racquet = require('../models/racquet');
+var Order = require('../models/service_order');
 const AppError = require("../utils/AppError");
 const { body, validationResult } = require('express-validator');
 const { appendRacquet } = require('../utils/google-sheet-write');
@@ -116,9 +117,15 @@ exports.getOneByQrCode = async function (req, res, next) {
                             .populate('crosses.string_id'); ; 
     if (!racquet) return next(new AppError("racquet with that qr_code not found", 404))
 
+    const orders = await Order.find({racquet: racquet._id}).sort({created: -1}).exec();
+    let recentOrder = null;
+    if(orders.length > 0);
+      recentOrder = orders[0];
+
     res.status(200).json({
         status: 'Success',
         racquet: racquet,
+        order: recentOrder
     });
   }
   catch(err){
