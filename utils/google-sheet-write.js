@@ -112,7 +112,7 @@ exports.appendShop = async (operation, shop) =>{
             JSON.stringify(shop.address), shop.email, shop.phone, Number(shop.enabled), shop.created, shop.updated, shop.created_by, 
             shop.etimated_delivery_time, shop.labor_price, shop.allow_own_strings,
             shop.stripe_customer_id, shop.stripe_subscription_id, shop.stripe_status,
-        shop.stripe_account_id, shop.stripe_price_id, shop.comission, shop.subscripiton_expiry, shop.tax, shop.stripe_account_enabled]]);
+        shop.stripe_account_id, shop.stripe_price_id, shop.comission, shop.percentage_comission, shop.subscripiton_expiry, shop.tax, shop.stripe_account_enabled]]);
         console.log(`Append Shop Result:${result.statusText}`);
     }  catch(err){
         console.log("Erro in writing excel:", err);
@@ -171,7 +171,7 @@ exports.appendOrder = async (operation, order) =>{
     try {
         var result = await appendValues("order", [[operation, order._id, order.uuid, order.account, order.racquet, order.string, 
             order.use_hybrid_settings, order.due_on, order.amount, order.payment_gateway_id, 
-            order.transaction_id, order.status, order.type, order. delivery_type, order.delivery_shop, 
+            order.transaction_id, order.status, order.type, order.delivery_type, order.delivery_shop, 
             order.delivery_address, order.delivery_date, order.created, order.updated ]])
         console.log(`Append Order Result:${result.statusText}`); 
     } catch (err) {

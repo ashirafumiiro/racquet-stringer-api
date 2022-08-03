@@ -37,6 +37,7 @@ var ShopSchema = new Schema({
   stripe_price_id: {type: String, default: ''},
   subscripiton_expiry: {type: Date},
   comission: {type: Number},
+  percentage_comission: {type: Number, default: 0},
   stripe_status: {type: String, enum: ["enabled", "disabled", "suspended"], default: "disabled"}
 }, opts);
 

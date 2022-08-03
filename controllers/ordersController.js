@@ -132,8 +132,9 @@ const get_checkout_session = async function(order){
     }
     console.log('Order details:', order);
     const price = parseInt(''+ (order.amount*100))
-    const comission = parseInt(''+ ((shop.comission || 0) * 100))
-    const session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id,comission, metadata);
+    let comission = parseInt(''+ ((shop.comission || 0) * 100));
+    let percentage_comission = parseInt(''+ ((shop.percentage_comission || 0) * order.amount));
+    const session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id,comission + percentage_comission, metadata);
     
     return session.url;
 }
