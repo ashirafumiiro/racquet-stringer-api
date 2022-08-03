@@ -2,7 +2,8 @@ const twilio = require('twilio');
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
-const serviceSID = process.env.TWILIO_VERIFY_SID
+const serviceSID = process.env.TWILIO_VERIFY_SID;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const client = require('twilio')(accountSid, authToken);
 
 const sendSMSOTP = async (phone) =>{
@@ -20,5 +21,15 @@ const verifySMSOTP = async (phone, code) =>{
     return response;
 }
 
+const sendMessage = async (phone, message) =>{
+    try {
+        let response = await client.messages
+            .create({body: message, from: twilioPhoneNumber, to: phone});
+        console.log('SMS reponse:', response);
+    } catch (err) {
+        console.log(err.message)
+    } 
+}
 
-module.exports = {verifySMSOTP, sendSMSOTP};
+
+module.exports = {verifySMSOTP, sendSMSOTP, sendMessage};

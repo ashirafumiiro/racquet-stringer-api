@@ -6,6 +6,7 @@ const { appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
 const Email = require('../utils/email');
 const uuid = require("uuid").v4;
+const twilio_utils = require('../utils/twilio-utils');
 
 exports.order_list = function(req, res, next) {
     var options = {
@@ -220,23 +221,35 @@ exports.get_checkout_session = get_checkout_session;
 
 exports.complete_order = async (req, res, next) =>{
     try {
-      var order_id = req.body.order_id;
+      let order_id = req.body.order_id;
       const order = await Order.findById(order_id).populate('delivery_shop'); 
       if (!order) return next(new AppError("order with that id not found", 404));
       if (order.status == "Pending") return next(new AppError("Pending order not supported", 400));
       let action = req.body.action; // complete or cancel
 
-      var client_email = order.delivery_address.email;
-      var order_status = 'Processing'
+      const client_email = order.delivery_address.email;
+      const client_phone = order.delivery_address.phone_number;
+
+      let order_status = order.status;
+
       if(action === 'complete' && order.status === 'Processing'){
         order_status = 'Completed'
-        let email_body = `<p>Hello there, Your order <strong>#${order.order_number}</strong> has been completed and ready for pickup</p>`
-        await send_email(client_email, "Order Complete", email_body);
+        let message_body = `Hello there, #${order.order_number} has been completed and ready for pickup`;
+        await twilio_utils.sendMessage(client_phone, message_body);
+        //await send_email(client_email, "Order Complete", email_body);
       }
       else if(action == 'reverse' && order.status === 'Completed'){
-        let email_body = `<p>Hello there, if you received an email about completion of order <strong>#${order.order_number}</strong>, please disregard it as the order is still being processed</p>`
-        await send_email(client_email, "Order still being processed", email_body);
+        let message_body = `Hello there, if you received a message regarding completion of order #${order.order_number}, please disregard it as the order is still being processed`
+        await twilio_utils.sendMessage(client_phone, message_body);
+        order_status = 'Processing'
+        //await send_email(client_email, "Order still being processed", email_body);
       }
+      else if(action === 'cancel' && order.status === 'Pending'){
+        order_status = 'Cancelled';
+        let message_body = `Hello there, order #${order.order_number}, has been successfully canceled.`;
+        await twilio_utils.sendMessage(client_phone, message_body);
+      }
+
       const updated = await Order.findByIdAndUpdate(order_id, {status: order_status}, {
         new: true,
         runValidators: true
