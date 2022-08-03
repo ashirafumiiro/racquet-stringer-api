@@ -8,6 +8,7 @@ const stripe_utils = require('../utils/stripe-utils');
 const ordersController = require('./ordersController');
 const Email = require('../utils/email');
 const uuid = require("uuid").v4;
+const twilio_utils = require('../utils/twilio-utils');
 
 const { appendAccount, appendOrder, appendShop} = require('../utils/google-sheet-write');
 
@@ -204,7 +205,9 @@ exports.createOrder = [
           let order_number = newOrder.order_number;
 
           await new Email({email: shop.email}, '', '').shopOrderConfirm(order_number);
-          await new Email({email: req.body.email}, '', '').custormerOrderConfirm(shop.name, order_number);
+          //await new Email({email: req.body.email}, '', '').custormerOrderConfirm(shop.name, order_number);
+          let client_msg = `Your order #${order_number} has been received. Please complete payment to proceed.`
+          await twilio_utils.sendMessage(req.body.phone_number, client_msg);
 
           const order = await Order.findById(newOrder._id).populate('delivery_shop');
           const url = await ordersController.get_checkout_session(order);

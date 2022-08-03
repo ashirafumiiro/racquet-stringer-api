@@ -8,6 +8,7 @@ const { appendShop, appendOrder } = require('../utils/google-sheet-write');
 const stripe_utils = require('../utils/stripe-utils');
 const Email = require('../utils/email');
 const uuid = require("uuid").v4;
+const twilio_utils = require('../utils/twilio-utils');
 
 exports.shop_list = function(req, res, next) {
     Shop.find({})
@@ -532,7 +533,8 @@ async function handleCheckout(session){
     if (!order) throw new Error("order with that id not found");
     const shop = order.delivery_shop;
     const email = shop.email;
-    const customer_email = order.delivery_address.email;
+    // const customer_email = order.delivery_address.email;
+    const customer_phone = order.delivery_address.phone_number;
 
     const saved = await Order.findByIdAndUpdate(order._id, {status: order_status}, {
       new: true,
@@ -543,7 +545,10 @@ async function handleCheckout(session){
 
     // send email coz payment has been sent
     await new Email({email: email}, '', '').shopOrderPayment(order_number);
-    await new Email({email: customer_email}, '', '').custormerOrderPyament(shop.name, order_number);
+    // await new Email({email: customer_email}, '', '').custormerOrderPyament(shop.name, order_number);
+    let msg = `Hello there, payment for your order #${order_number} has been recieved. You will be notified when it is available for pickup.`
+    await twilio_utils.sendMessage(customer_phone, msg);
+
 
     appendOrder('Updated', saved);
   }
