@@ -72,7 +72,7 @@ exports.createOrder = [
               await appendOrder("Created", newOrder);
               res.status(200).json({
                   status: 'Success',
-                  account: newOrder,
+                  order: newOrder,
               });
            } catch (err) {
             next(new AppError(err.message, 500));
@@ -92,7 +92,7 @@ exports.updateOrder = async (req, res, next) => {
       await appendOrder('Updated', order);
       res.status(200).json({
       status: 'Success',
-      account: order,
+      order: order,
     });
   }
   catch(err){
@@ -224,7 +224,7 @@ exports.complete_order = async (req, res, next) =>{
       let order_id = req.body.order_id;
       const order = await Order.findById(order_id).populate('delivery_shop'); 
       if (!order) return next(new AppError("order with that id not found", 404));
-      if (order.status == "Pending") return next(new AppError("Pending order not supported", 400));
+      
       let action = req.body.action; // complete or cancel
 
       const client_email = order.delivery_address.email;
