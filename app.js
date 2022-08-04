@@ -10,6 +10,7 @@ const errorHandler = require("./controllers/errorController");
 const verifyApiKey = require('./middleware/check_api_key');
 const { checkMaintenanceMode } = require('./controllers/siteSettingsController');
 const shopController = require('./controllers/shopController')
+const surveyController = require('./controllers/surveyController')
 
 var accounts = require('./routes/accountRouter');
 var racquets = require('./routes/racquetRouter');
@@ -65,6 +66,7 @@ app.use('/api/v1/shops', shops);
 app.use('/api/v1/orders', orders);
 app.use('/api/v1/profiles', profiles);
 app.use('/api/v1/strings', strings);
+app.post('/api/v1/survey', surveyController.create_survey);
 
 
 app.use("*", (req, res) => {
