@@ -88,21 +88,39 @@ class Email {
     await this.send(html, "Verify Account");
   }
 
-  async shopOrderConfirm(order_number) {
+  async shopOrderConfirm(order) {
+    const {order_number, amount, due_on, racquet, delivery_address} = order;
+    const customer_name = `${delivery_address.first_name} ${delivery_address.last_name}`;
+    const customer_phone = delivery_address.phone_number
+    let is_hybrid = racquet.mains.string_id.id === racquet.crosses.string_id.id
+    console.log('Sending email for order: #' + order_number)
+    
     const html = pug.renderFile(
       `${__dirname}/../views/email/shop_order_confirm.pug`,
       {
-        order_number
+        order_number,
+        amount,
+        customer_name, 
+        is_hybrid,
+        customer_phone,
+        crosses: racquet.crosses,
+        mains: racquet.mains,
+        due_on: due_on.toLocaleDateString("en-US"),
+        brand: racquet.brand,
+        model: racquet.model
       }
     );
-    await this.send(html, "Order Creation Notification");
+    await this.send(html, "You received an order through RacquetPass!");
+    console.log('Sent successfully')
   }
 
-  async shopOrderPayment(order_number) {
+  async shopOrderPayment(order) {
+    const {order_number} = order;
     const html = pug.renderFile(
       `${__dirname}/../views/email/shop_payment_confirm.pug`,
       {
-        order_number
+        order_number,
+        full_name
       }
     );
     await this.send(html, "Confirmation of order payment");

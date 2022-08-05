@@ -204,12 +204,20 @@ exports.createOrder = [
           await appendOrder("Created", newOrder);
           let order_number = newOrder.order_number;
 
-          await new Email({email: shop.email}, '', '').shopOrderConfirm(order_number);
+          const order = await Order.findById(newOrder._id).populate('delivery_shop').populate('racquet')
+                            .populate('racquet.mains.string_id').populate('racquet.crosses.string_id'); 
+          if (!order) return next(new AppError("order with that id not found", 404))
+          var json = order.toJSON();
+
+          json.racquet.mains.string_id = (await Strings.findById(order.racquet.mains.string_id)).toJSON();
+          json.racquet.crosses.string_id = (await Strings.findById(order.racquet.crosses.string_id)).toJSON()
+
+          await new Email({email: shop.email}, '', '').shopOrderConfirm(json);
           //await new Email({email: req.body.email}, '', '').custormerOrderConfirm(shop.name, order_number);
-          let client_msg = `Your order #${order_number} has been received. Please complete payment to proceed.`
+          
+          let client_msg = `${req.body.first_name} ${req.body.last_name}, your order was successfully submitted through RacquetPass! Make sure to drop it off at ${shop.name}. View details at https://racquetpass.web.app/order/${newOrder._id}`;
           await twilio_utils.sendMessage(req.body.phone_number, client_msg);
 
-          const order = await Order.findById(newOrder._id).populate('delivery_shop');
           const url = await ordersController.get_checkout_session(order);
           res.status(200).json({
             status: 'Success',

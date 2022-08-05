@@ -130,7 +130,6 @@ const get_checkout_session = async function(order){
       uuid: order.uuid,
       client_email: client_email
     }
-    console.log('Order details:', order);
     const price = parseInt(''+ (order.amount*100))
     let comission = parseInt(''+ ((shop.comission || 0) * 100));
     let percentage_comission = parseInt(''+ ((shop.percentage_comission || 0) * order.amount));
@@ -227,27 +226,29 @@ exports.complete_order = async (req, res, next) =>{
       if (!order) return next(new AppError("order with that id not found", 404));
       
       let action = req.body.action; // complete or cancel
+      let shop_name = order.delivery_shop.name;
+      const order_link = `https://racquetpass.web.app/order/${order._id}`
 
-      const client_email = order.delivery_address.email;
+      const shop_address = `${order.delivery_shop.address.street}, ${order.delivery_shop.address.street}` ;
       const client_phone = order.delivery_address.phone_number;
 
       let order_status = order.status;
 
       if(action === 'complete' && order.status === 'Processing'){
         order_status = 'Completed'
-        let message_body = `Hello there, #${order.order_number} has been completed and ready for pickup`;
+        let message_body = `Your order is complete! Go to ${shop_name} at ${shop_address} and show them your order details ${order_link} to verify your order.        `;
         await twilio_utils.sendMessage(client_phone, message_body);
         //await send_email(client_email, "Order Complete", email_body);
       }
       else if(action == 'reverse' && order.status === 'Completed'){
-        let message_body = `Hello there, if you received a message regarding completion of order #${order.order_number}, please disregard it as the order is still being processed`
+        let message_body = `Hello there, if you received a message regarding completion of order ${order_link}, please disregard it as the order is still being processed`
         await twilio_utils.sendMessage(client_phone, message_body);
         order_status = 'Processing'
         //await send_email(client_email, "Order still being processed", email_body);
       }
       else if(action === 'cancel' && order.status === 'Pending'){
         order_status = 'Cancelled';
-        let message_body = `Hello there, order #${order.order_number}, has been successfully canceled.`;
+        let message_body = `Hello there, order ${order_link}, has been successfully canceled.`;
         await twilio_utils.sendMessage(client_phone, message_body);
       }
 
@@ -270,12 +271,4 @@ exports.complete_order = async (req, res, next) =>{
       next(new AppError(err.message, 500));
     }
 
-}
-
-async function send_email(email, subject, body) {
-  let user = {
-    email: email,
-    full_name: ''
-  };
-  await new Email(user, '', '').send(body, subject);
 }

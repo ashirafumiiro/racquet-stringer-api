@@ -2,11 +2,36 @@ extends baseEmail
 
 block content 
     p
-      | Hello there, an order  
-      strong ##{order_number}
-      |  has been created for your shop and Pending payment. You can login to RacquetPass and veiw it
-    .signature
-      p 
+      | #{customer_name} placed an order through RacquetPass to get their racquet strung.  
+      a(href='https://racquetpass.web.app/login') Sign 
+      | in on mobile to scan their racquet and complete their order.  
+    br
+    p
+      | Order Number: #{order_number} 
+      br
+      | Due Date: #{due_on}
+      br
+      | Price: $#{amount}
+    p
+      | Brand and Model: #{brand} and #{model}
+
+    if is_hybrid
       p
+        | String Settings: #{mains.string_id.name} @ #{mains.string_id.tension} lbs
+    else
+      p
+        | String Settings
+        br
+        | Mains: #{mains.string_id.name} @ #{mains.string_id.tension} lbs
+        br
+        | Crosses: #{crosses.string_id.name} @ #{crosses.string_id.tension} lbs
+    p
+      | Player Name: #{customer_name}
+      br
+      | Player Phone: #{customer_phone}
+      
+    .signature
+      br 
+      br
       p Cheers,
       p RacquetPass

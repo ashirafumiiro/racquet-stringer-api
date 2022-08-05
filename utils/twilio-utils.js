@@ -23,11 +23,15 @@ const verifySMSOTP = async (phone, code) =>{
 
 const sendMessage = async (phone, message) =>{
     try {
+        const messagingServiceSid = process.env.TWILIO_MESSAGE_SID
         let response = await client.messages
-            .create({body: message, from: twilioPhoneNumber, to: phone});
-        console.log('SMS reponse:', response);
+            .create({
+                body: message, 
+                // from: twilioPhoneNumber, 
+                messagingServiceSid,
+                to: phone});
     } catch (err) {
-        console.log(err.message)
+        console.log("SMS Error:", err.message)
     } 
 }
 
