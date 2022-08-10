@@ -23,6 +23,10 @@ const verifySMSOTP = async (phone, code) =>{
 
 const sendMessage = async (phone, message) =>{
     try {
+        if(phone.includes('000000000')) {
+            console.log('skipping sms for test number.!')
+            return
+        };
         const messagingServiceSid = process.env.TWILIO_MESSAGE_SID
         let response = await client.messages
             .create({
