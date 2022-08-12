@@ -22,8 +22,17 @@ exports.racquet_list = function(req, res, next) {
 
 exports.getOneRacquet = async function (req, res, next) {
   try{
-    const racquet = await Racquet.findById(req.params.id).populate('mains.string_id')
+    let racquet;
+    const type = req.query.type
+    if(type && type === 'uuid'){
+      racquet = await Racquet.findOne({uuid: req.params.id}).populate('mains.string_id')
                             .populate('crosses.string_id'); 
+    }
+    else{
+      racquet = await Racquet.findById(req.params.id).populate('mains.string_id')
+                            .populate('crosses.string_id'); 
+    }
+   
     if (!racquet) return next(new AppError("racquet with that id not found", 404))
 
     res.status(200).json({

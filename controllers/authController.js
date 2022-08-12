@@ -227,7 +227,7 @@ exports.sendOTP = async (req, res, next) => {
 exports.verify_otp = async (req, res) => {
   try {
     const { otp, phone } = req.body;
-    if (phone.includes('000000000') || otp.includes('000000')) {
+    if (phone.includes('000000000') && otp.includes('000000')) {
       console.log('skipping verification for test number!')
       return res.send({
         status: "success",

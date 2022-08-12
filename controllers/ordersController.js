@@ -28,8 +28,17 @@ exports.order_list = function(req, res, next) {
 
 exports.getOneOrder = async function (req, res, next) {
   try{
-    const order = await Order.findById(req.params.id).populate('delivery_shop').populate('racquet')
-                            .populate('racquet.mains.string_id').populate('racquet.crosses.string_id'); 
+    let order;
+    const type = req.query.type
+    if(type && type === 'uuid'){
+      order = await Order.findOne({uuid: req.params.id}).populate('delivery_shop').populate('racquet')
+                .populate('racquet.mains.string_id').populate('racquet.crosses.string_id'); 
+    }
+    else{
+      order = await Order.findById(req.params.id).populate('delivery_shop').populate('racquet')
+      .populate('racquet.mains.string_id').populate('racquet.crosses.string_id'); 
+    }
+   
     if (!order) return next(new AppError("order with that id not found", 404))
     var json = order.toJSON();
 
