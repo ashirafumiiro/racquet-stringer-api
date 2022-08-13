@@ -312,10 +312,10 @@ exports.search = async function (req, res, next) {
  
     let order;
     if(mongoose.isValidObjectId(value)){
-      order = await Order.findById(value).populate('racquet');
+      order = await Order.findById(value).populate('racquet').populate('delivery_shop');
     }
     else{
-      order = await Order.findOne({ uuid: value }).populate('racquet');
+      order = await Order.findOne({ uuid: value }).populate('racquet').populate('delivery_shop');
     }
     
 
@@ -323,13 +323,10 @@ exports.search = async function (req, res, next) {
     // let order = await Order.findOne({$or: [{ uuid: value }, { _id: new ObjectId(value) }]}).populate('racquet');
     if (order) {
       let obj = order.toJSON();
-      // console.log(obj);
       let rac_id = obj.racquet.id;
       obj.racquet = await Racquet.findById(rac_id).populate('mains.string_id').populate('crosses.string_id')
       return sendResponse(obj, 'order');
     }
-
-    console.log('no order found. searching racquets');
 
     //combined query is less performat and takes too long
     let racquet = await Racquet.findOne({ qr_code: value }).populate('mains.string_id')
@@ -345,8 +342,7 @@ exports.search = async function (req, res, next) {
 
 
     if (racquet) {
-      console.log('Racquet found')
-      const orders = await Order.find({ racquet: racquet._id }).sort({ created: -1 }).exec();
+      const orders = await Order.find({ racquet: racquet._id }).sort({ created: -1 }).populate('delivery_shop').exec();
       if (orders.length > 0) {
         let order = orders[0].toJSON();
         order.racquet = racquet
