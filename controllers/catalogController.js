@@ -9,7 +9,7 @@ const ordersController = require('./ordersController');
 const Email = require('../utils/email');
 const uuid = require("uuid").v4;
 const twilio_utils = require('../utils/twilio-utils');
-const ObjectId = require('mongoose').Types.ObjectId; 
+const mongoose = require('mongoose');
 
 const { appendAccount, appendOrder, appendShop } = require('../utils/google-sheet-write');
 
@@ -309,25 +309,40 @@ exports.search = async function (req, res, next) {
     };
 
     if (!value) return next(new AppError("search value is needed", 400))
-
-    let order = await Order.findOne({ uuid: value }).populate('racquet');
-    if(!order) order = await Order.findById(value).populate('racquet');
+ 
+    let order;
+    if(mongoose.isValidObjectId(value)){
+      order = await Order.findById(value).populate('racquet');
+    }
+    else{
+      order = await Order.findOne({ uuid: value }).populate('racquet');
+    }
+    
 
     //below timesout and not performant
     // let order = await Order.findOne({$or: [{ uuid: value }, { _id: new ObjectId(value) }]}).populate('racquet');
     if (order) {
-      return sendResponse(order, 'order');
+      let obj = order.toJSON();
+      // console.log(obj);
+      let rac_id = obj.racquet.id;
+      obj.racquet = await Racquet.findById(rac_id).populate('mains.string_id').populate('crosses.string_id')
+      return sendResponse(obj, 'order');
     }
+
+    console.log('no order found. searching racquets');
 
     //combined query is less performat and takes too long
     let racquet = await Racquet.findOne({ qr_code: value }).populate('mains.string_id')
-              .populate('crosses.string_id');
+      .populate('crosses.string_id');
 
-    if(!racquet) racquet = await Racquet.findOne({ uuid: value }).populate('mains.string_id')
-                                  .populate('crosses.string_id');
+    if (!racquet && mongoose.isValidObjectId(value)) racquet = await Racquet.findById(value).populate('mains.string_id')
+      .populate('crosses.string_id');
 
-    if(!racquet) racquet = await Racquet.findById(value).populate('mains.string_id')
-                                  .populate('crosses.string_id');
+    console.log('searchin racquet by uuid');
+    if (!racquet) racquet = await Racquet.findOne({ uuid: value }).populate('mains.string_id')
+      .populate('crosses.string_id');
+
+
 
     if (racquet) {
       console.log('Racquet found')
