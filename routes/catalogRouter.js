@@ -9,5 +9,6 @@ router.get('/orders/:id', catalogController.getOrders);
 router.post("/register-business", catalogController.registerBusiness);
 router.post('/edit-shop-settings/:id', catalogController.editShopSettings);
 router.post('/create-order', catalogController.createOrder);
+router.get('/search/:value', catalogController.search);
 
 module.exports = router;

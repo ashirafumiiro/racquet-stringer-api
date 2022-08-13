@@ -128,8 +128,7 @@ exports.getOneByQrCode = async function (req, res, next) {
 
     const orders = await Order.find({racquet: racquet._id}).sort({created: -1}).exec();
     let recentOrder = null;
-    if(orders.length > 0);
-      recentOrder = orders[0];
+    if(orders.length > 0) recentOrder = orders[0];
 
     res.status(200).json({
         status: 'Success',
