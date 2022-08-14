@@ -5,7 +5,7 @@ var racquet_controller = require('../controllers/racquetController');
 
 
 router.get('/get-by-code/:code', racquet_controller.getOneByQrCode)
-
+router.get('/get-by-value/:value', racquet_controller.getOneByValue)
 
 router.route('/:id')
     .get(racquet_controller.getOneRacquet)
