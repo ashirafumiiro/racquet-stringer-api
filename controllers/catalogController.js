@@ -127,7 +127,7 @@ exports.editShopSettings = async (req, res, next) => {
 
 exports.createOrder = [
   // Validate and sanitize fields.
-  body('email', 'email must be a valid email address.').trim().isLength({ min: 2 }).withMessage("email too short").escape().isEmail(),
+  // body('email', 'email must be a valid email address.').trim().isLength({ min: 2 }).withMessage("email too short").escape().isEmail(),
   body('racquet_id', 'racquet_id must not be empty.').trim().isLength({ min: 5 }).withMessage("racquet_id too short").escape(),
   body('shop_id', 'shop_id must not be empty.').trim().isLength({ min: 5 }).withMessage("shop_id too short").escape(),
   body('first_name', 'first_name must not be empty.').trim().isLength({ min: 1 }).escape(),
@@ -195,7 +195,7 @@ exports.createOrder = [
         delivery_shop: req.body.shop_id,
         delivery_address: {
           first_name: req.body.first_name,
-          email: req.body.email,
+          email: req.body.email || '',
           last_name: req.body.last_name,
           phone_number: req.body.phone_number
         },

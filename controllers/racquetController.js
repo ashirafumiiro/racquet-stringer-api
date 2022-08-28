@@ -9,7 +9,6 @@ const mongoose = require('mongoose');
 exports.racquet_list = function (req, res, next) {
   Racquet.find({})
     .sort({ model: 1 })
-    .populate('account')
     .exec(function (err, list_racquets) {
       if (err) { return next(err); }
       //Successful, so render
@@ -50,7 +49,6 @@ exports.createRacquet = [
   // Validate and sanitize fields.
   body('brand', 'brand must not be empty.').trim().isLength({ min: 1 }).escape(),
   body('model', 'model must not be empty.').trim().isLength({ min: 1 }).escape(),
-  body('brand', 'brand must not be empty.').trim().isLength({ min: 1 }).escape(),
 
   // Process request after validation and sanitization.
   async (req, res, next) => {

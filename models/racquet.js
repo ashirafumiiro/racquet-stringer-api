@@ -32,7 +32,11 @@ var RacquetSchema = new Schema({
   created: {type: Date},
   updated: {type: Date},
   sport: { type: String, enum: ['Tennis', 'Squash', 'Badminton', 'Other']},
-  owner: {type: String, default: ''}
+  owner: {type: String, 
+    default: function() {
+      return `${this.brand} ${this.model}`
+    }
+  }
 }, opts);
 
 RacquetSchema.virtual('id').get(function () {

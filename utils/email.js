@@ -114,8 +114,7 @@ class Email {
     console.log('Sent successfully')
   }
 
-  async shopOrderPayment(order) {
-    const {order_number} = order;
+  async shopOrderPayment(order_number) {
     const html = pug.renderFile(
       `${__dirname}/../views/email/shop_payment_confirm.pug`,
       {
