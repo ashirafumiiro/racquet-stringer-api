@@ -119,8 +119,7 @@ class Email {
     const html = pug.renderFile(
       `${__dirname}/../views/email/shop_payment_confirm.pug`,
       {
-        order_number,
-        full_name
+        order_number
       }
     );
     await this.send(html, "Confirmation of order payment");
