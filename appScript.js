@@ -1,4 +1,4 @@
-const maping = {0: 'operation', 1: '_id', 2: 'uuid', 3: 'name', 4: 'country', 5: 'address', 6: 'email', 7: 'phone', 8: 'enabled', 9: 'created', 10: 'updated', 11: 'created_by', 12: 'etimated_delivery_time', 13: 'labor_price', 14: 'allow_own_strings', 15: 'stripe_customer_id', 16: 'stripe_subscription_id', 17: 'stripe_status', 18: 'stripe_account_id', 19: 'stripe_price_id', 20: 'comission', 21: 'percentage_comission', 22: 'subscripiton_expiry', 23: 'tax'};
+const maping = {0: 'operation', 1: '_id', 2: 'uuid', 3: 'name', 4: 'country', 5: 'address', 6: 'email', 7: 'phone', 8: 'enabled', 9: 'created', 10: 'updated', 11: 'created_by', 12: 'etimated_delivery_time', 13: 'labor_price', 14: 'allow_own_strings', 15: 'stripe_customer_id', 16: 'stripe_subscription_id', 17: 'stripe_status', 18: 'stripe_account_id', 19: 'stripe_price_id', 20: 'comission', 21: 'percentage_comission', 22: 'subscripiton_expiry', 23: 'tax', 24: 'stripe_account_enabled', 25: 'is_tax_percentage'};
 
 function doGet(e) {
   var ss = SpreadsheetApp.getActive();
@@ -14,7 +14,7 @@ function rowEdited(e){
   Logger.log(changedColumn);
 
   var spreadSheet = SpreadsheetApp.getActive();
-  var watchColumns = [9,20,21,22];
+  var watchColumns = [9,20,21,22,24];
   let isInList = watchColumns.includes(changedColumn);
   if(!isInList) //process only changes in a few columns
     return;
@@ -29,13 +29,14 @@ function rowEdited(e){
     result[maping[i]] = row[i];
 
   const id = result._id;
-  const {enabled, stripe_price_id, comission, percentage_comission } = result;
+  const {enabled, stripe_price_id, comission, percentage_comission, is_tax_percentage } = result;
   
   const payload = {
                     enabled: Boolean(enabled), 
                     percentage_comission,
                     stripe_price_id, 
                     comission, 
+                    is_tax_percentage: Boolean(is_tax_percentage)
                   };
 
   var options = {
@@ -45,7 +46,7 @@ function rowEdited(e){
     },
     'payload' : payload
   };
-  
+  // var add = 'https://01ca-154-0-128-42.eu.ngrok.io';
   var add = 'https://racquet-stringer-api.herokuapp.com';
   var url = add +  '/api/v1/shops/' + id.replaceAll('"','');
 
