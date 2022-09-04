@@ -156,7 +156,8 @@ exports.createOrder = [
       if (!shop) return next(new AppError("Shop with that id not found", 404));
 
       if (shop.stripe_status !== 'enabled') return next(new AppError("Shop with that is not enabled in stripe", 400));
-      const tax = shop.tax || 0;
+      let tax = shop.tax || 0;
+
       const labor_price = shop.labor_price;
       let mains_string = racquet.mains.string_id;
       let string_cost = 0;
@@ -183,8 +184,13 @@ exports.createOrder = [
       let due_on = new Date();
       due_on.setDate(due_on.getDate() + shop.estimated_delivery_time);
 
-      let amount = string_cost + tax + labor_price;
-      console.log('Order Cost items:', { string_cost, tax, labor_price });
+      let amount = string_cost + labor_price;
+      if(shop.is_tax_percentage){
+          tax = tax * amount / 100.0;
+      }  
+      amount += tax;
+      console.log('Order Cost items:', { string_cost, tax, labor_price, amount });
+      
 
       var newOrder = await Order.create({
         shop: shop._id,
