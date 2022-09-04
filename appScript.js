@@ -14,7 +14,7 @@ function rowEdited(e){
   Logger.log(changedColumn);
 
   var spreadSheet = SpreadsheetApp.getActive();
-  var watchColumns = [9,20,21,22,24];
+  var watchColumns = [9,20,21,22];
   let isInList = watchColumns.includes(changedColumn);
   if(!isInList) //process only changes in a few columns
     return;
@@ -29,14 +29,13 @@ function rowEdited(e){
     result[maping[i]] = row[i];
 
   const id = result._id;
-  const {enabled, stripe_price_id, comission, percentage_comission, is_tax_percentage } = result;
+  const {enabled, stripe_price_id, comission, percentage_comission } = result;
   
   const payload = {
                     enabled: Boolean(enabled), 
                     percentage_comission,
                     stripe_price_id, 
                     comission, 
-                    is_tax_percentage: Boolean(is_tax_percentage)
                   };
 
   var options = {

@@ -168,14 +168,17 @@ exports.createOrder = [
         string_cost = mains_string.price;
       }
 
-      let crosses_string = racquet.crosses.string_id;
-      if (crosses_string.hybrid_type == "Reel") {
-        string_cost += crosses_string.price / 2;
+      // console.log('crosses:',racquet.crosses.string_id.id, "main:", racquet.mains.string_id.id)
+      if(racquet.mains.string_id.id !== racquet.crosses.string_id.id){
+        console.log('Hybrid')
+        let crosses_string = racquet.crosses.string_id;
+        if (crosses_string.hybrid_type == "Reel") {
+          string_cost += crosses_string.price / 2;
+        }
+        else {
+          string_cost += crosses_string.price;
+        }
       }
-      else {
-        string_cost += crosses_string.price;
-      }
-
 
       if (!shop.estimated_delivery_time) {
         throw new Error('No estimated delivery_time for shop');
