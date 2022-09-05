@@ -19,7 +19,7 @@ var ShopSchema = new Schema({
   uuid : {type: String, default: uuid, unique: true},
   name: {type: String, required: true},
   country: {type: String, required: true},
-  address: {street: {type: String}, city: {type: String}, state: {type: String}, zip_code: {type: Number}, apartment:{type: String}},
+  address: {street: {type: String}, city: {type: String}, state: {type: String}, zip_code: {type: String}, apartment:{type: String}},
   email: {type: String, required: true},
   phone: {type: String},
   enabled: {type: Boolean, default: false},
