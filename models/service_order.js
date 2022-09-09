@@ -28,7 +28,7 @@ var ServiceOrderSchema = new Schema({
   type: {type: String}, 
   delivery_type: String,
   delivery_shop: {type: Schema.Types.ObjectId, ref: 'Shop', required: true},
-  delivery_address: {first_name: String, last_name: String, phone_number: String, email: String},
+  delivery_address: {first_name: String, last_name: String, phone_number: String},
   delivery_date: {type: Date},
   created: {type: Date},
   updated: {type: Date},

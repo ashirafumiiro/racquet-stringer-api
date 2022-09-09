@@ -132,12 +132,13 @@ const get_checkout_session = async function(order){
       throw new Error("shop cannot receive payment");
     const stripe_account_enabled = await stripe_utils.accout_charges_enabled(shop.stripe_account_id)
     if(!stripe_account_enabled) throw new Error("shop cannot receive payment");
-    var client_email = order.delivery_address.email;
+    var client_phone_number = order.delivery_address.phone_number;
+    console.log('client_phone_number:', client_phone_number)
     const metadata = {
       order_id: order.id,
       order_number: order.order_number,
       uuid: order.uuid,
-      client_email: client_email
+      client_phone_number
     }
     const price = parseInt(''+ (order.amount*100))
     let comission = parseInt(''+ ((shop.comission || 0) * 100));
