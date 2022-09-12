@@ -237,9 +237,9 @@ exports.complete_order = async (req, res, next) =>{
       
       let action = req.body.action; // complete or cancel
       let shop_name = order.delivery_shop.name;
-      const order_link = `https://racquetpass.web.app/order/${order._id}`
+      const order_link = `${process.env.BASE_URL}/order/${order._id}`
 
-      const shop_address = `${order.delivery_shop.address.street}, ${order.delivery_shop.address.street}` ;
+      const shop_address = `${order.delivery_shop.address.street}, ${order.delivery_shop.address.city} ${order.delivery_shop.address.state}` ;
       const client_phone = order.delivery_address.phone_number;
 
       let order_status = order.status;
