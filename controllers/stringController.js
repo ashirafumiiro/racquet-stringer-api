@@ -61,12 +61,28 @@ exports.createString = [
            try {
               const shop = await Shop.findById(req.body.shop).exec();
               if(!shop) return next(new AppError("shop with specified id does not exist", 404))
-              const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid()});
+              const hybrid_type = req.body.hybrid_type;
+              let string1;
+              let string2;
+              if(hybrid_type === 'Both'){
+                const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Reel'});
+                await appendString("Created", newString);
+                string1 = newString;
 
-              await appendString("Created", newString);
+                const newString2 = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Packet'});
+                await appendString("Created", newString2);
+                string2 = newString2;
+              }
+              else{
+                const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid()});
+                await appendString("Created", newString);
+                string1 = newString;
+              }
+
               res.status(200).json({
                   status: 'Success',
-                  string: newString,
+                  string: string1,
+                  string2: string2
               });
            } catch (err) {
             next(new AppError(err.message, 500));
