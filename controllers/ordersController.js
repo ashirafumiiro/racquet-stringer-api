@@ -282,3 +282,34 @@ exports.complete_order = async (req, res, next) =>{
     }
 
 }
+
+
+exports.resend_confirmatation = async (req, res, next) =>{
+  try {
+    let order_id = req.body.order_id;
+    const order = await Order.findById(order_id).populate('delivery_shop'); 
+    if (!order) return next(new AppError("order with that id not found", 404));
+    const order_link = `${process.env.BASE_URL}/order/${order._id}`
+    const client_phone = order.delivery_address.phone_number;
+
+    let statusCode = 200;
+    let message = 'Success'
+    if(order.status === 'Completed'){
+      let message_body = `Hello there, if you received a message regarding completion of order ${order_link}, please disregard it as the order is still being processed`
+      await twilio_utils.sendMessage(client_phone, message_body);
+    }
+    else{
+      statusCode = 400
+      message = 'Order not completed'
+    }
+    
+    res.status(statusCode).json({
+      status: message,
+      order: order,
+    });
+    
+  } catch (err) {
+    next(new AppError(err.message, 500));
+  }
+
+}

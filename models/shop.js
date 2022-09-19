@@ -39,7 +39,8 @@ var ShopSchema = new Schema({
   subscripiton_expiry: {type: Date},
   comission: {type: Number},
   percentage_comission: {type: Number, default: 0},
-  stripe_status: {type: String, enum: ["enabled", "disabled", "suspended"], default: "disabled"}
+  stripe_status: {type: String, enum: ["enabled", "disabled", "suspended"], default: "disabled"},
+  appeared_to_clients: {type: Boolean, default: false}
 }, opts);
 
 ShopSchema.virtual('id').get(function () {

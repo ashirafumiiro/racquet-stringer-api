@@ -17,6 +17,7 @@ exports.shop_list = function(req, res, next) {
     .exec(function (err, list_shops) {
       if (err) { return next(err); }
       //Successful, so render
+
       res.status(200).json({
         status: 'Success',
         results: list_shops.length,
@@ -27,8 +28,9 @@ exports.shop_list = function(req, res, next) {
 
 exports.getOneShop = async function (req, res, next) {
   try{
-    const shop = await Shop.findById(req.params.id).populate('created_by'); 
+    let shop = await Shop.findById(req.params.id).populate('created_by'); 
     if (!shop) return next(new AppError("shop with that id not found", 404))
+    shop = await appearedToClients(shop)
 
     res.status(200).json({
         status: 'Success',
@@ -81,11 +83,13 @@ exports.updateShop = [
    async (req, res, next) => {
         try{
            console.log('body',req.body);
-          const shop = await Shop.findByIdAndUpdate(req.params.id, req.body, {
+           let shop = await Shop.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
             })
             if (!shop) return next(new AppError("Shop with that id not found", 404))
+            shop = await appearedToClients(shop)
+
             await appendShop("Updated", shop);
             res.status(200).json({
             status: 'Success',
@@ -566,11 +570,29 @@ async function handleAccount(account){
   if (!shop){
     throw new Error('No shop with uuid found')
   }
+
+  shop = await appearedToClients(shop)
+  let appeared_to_clients = shop.appeared_to_clients
+
   console.log('Updating shop:', shop._id);
-  shop = await Shop.findByIdAndUpdate(shop._id, {stripe_account_enabled}, {
+  shop = await Shop.findByIdAndUpdate(shop._id, {stripe_account_enabled, appeared_to_clients}, {
     new: true,
     runValidators: true
     });
     await appendShop("Updated", shop);
     console.log('Completed updating account');
+}
+
+
+async function appearedToClients(shop){
+  let appeared_to_clients = false
+  if(shop.stripe_account_enabled && shop.enabled && shop.stripe_status === 'enabled')
+      appeared_to_clients = true
+  if(appeared_to_clients && !shop.appeared_to_clients){
+    shop = await Shop.findByIdAndUpdate(shop._id, {appeared_to_clients}, {
+      new: true,
+      runValidators: true
+      })
+  }
+  return shop
 }
