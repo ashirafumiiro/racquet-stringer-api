@@ -187,11 +187,8 @@ exports.createOrder = [
       due_on.setDate(due_on.getDate() + shop.estimated_delivery_time);
 
       let amount = string_cost + labor_price;
-      if(shop.is_tax_percentage){
-          tax = tax * amount / 100.0;
-      }  
-      amount += tax;
-      console.log('Order Cost items:', { string_cost, tax, labor_price, amount });
+
+      console.log('Order Cost items:', { string_cost, labor_price, amount });
       
 
       var newOrder = await Order.create({
