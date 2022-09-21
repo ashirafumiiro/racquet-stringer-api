@@ -596,3 +596,31 @@ async function appearedToClients(shop){
   }
   return shop
 }
+
+exports.get_tax = async (req, res, next) => {
+  try {
+    let amount = parseInt(req.body.amount);
+    let shop_id = req.body.shop_id;
+
+    let shop = await Shop.findById(shop_id);
+    if (!shop) return next(new AppError("shop with that id not found", 404))
+    if (!shop.enabled || !shop.stripe_account_id || shop.stripe_status != "enabled")
+      throw new Error("shop cannot receive payment");
+
+
+    const price = parseInt('' + (amount * 100))
+    let comission = parseInt('' + ((shop.comission || 0) * 100));
+    let percentage_comission = parseInt('' + ((shop.percentage_comission || 0) * amount));
+    const session = await stripe_utils.create_checkout_session(price, shop.stripe_account_id, comission + percentage_comission, {'notes': 'Getting tax'});
+
+    console.log('Session:', session)
+    res.status(200).json({
+      status: 'Success',
+      tax: session.total_details.amount_tax
+    });
+
+  }
+  catch (err) {
+    next(new AppError(err.message, 500));
+  }
+}

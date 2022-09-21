@@ -85,10 +85,14 @@ exports.create_checkout_session = async (price, stripe_account, comission, metad
                     name: 'Order Cost', 
                     description: 'Total amount of the operation'
                 },
-                unit_amount: price
+                unit_amount: price,
+                tax_behavior: 'exclusive'
             },
           quantity: 1,
         }],
+        automatic_tax: {
+            enabled: true,
+        },
         mode: 'payment',
         metadata: metadata,
         success_url: process.env.BASE_URL + `/order/${orderId}?status=success`,

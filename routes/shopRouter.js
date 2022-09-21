@@ -8,6 +8,7 @@ router.get('/user-shop/:id', shop_controller.get_user_shop);
 router.post('/stripe-portal-session', shop_controller.create_stripe_dashboard_session);
 router.post('/subscription-session', shop_controller.create_subscription_session);
 router.post('/onboard-session', shop_controller.create_onboarding_session);
+router.post('/get-tax', shop_controller.get_tax);
 
 router.route('/shop-requests')
     .get(shop_controller.shop_requests_list)
