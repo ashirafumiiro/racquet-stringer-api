@@ -96,7 +96,7 @@ exports.create_checkout_session = async (price, stripe_account, comission, metad
         mode: 'payment',
         metadata: metadata,
         success_url: process.env.BASE_URL + `/order/${orderId}?status=success`,
-        cancel_url: process.env.BASE_URL + `/order/${orderId}?status=fail`,
+        cancel_url: process.env.BASE_URL + `/order-flow/review?status=fail&orderId=${orderId}`,
         payment_intent_data: {
           application_fee_amount: comission,
         }
