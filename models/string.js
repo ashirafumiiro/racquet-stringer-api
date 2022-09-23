@@ -29,7 +29,8 @@ var StringSchema = new Schema({
   updated: {type: Date},
   hybrid_type: { type: String, enum:["Reel",'Packet','Both']},
   in_stock: {type: Boolean},
-  tension: {type: Number}
+  tension: {type: Number},
+  hybrid: {type: Boolean, default: false}
 }, opts);
 
 StringSchema.virtual('id').get(function () {

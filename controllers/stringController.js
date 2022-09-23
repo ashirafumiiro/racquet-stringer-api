@@ -65,11 +65,11 @@ exports.createString = [
               let string1;
               let string2;
               if(hybrid_type === 'Both'){
-                const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Reel'});
+                const newString = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Reel', hybrid: true});
                 await appendString("Created", newString);
                 string1 = newString;
 
-                const newString2 = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Packet'});
+                const newString2 = await StringModel.create({ ...req.body, created: Date.now(), uuid: uuid(), hybrid_type: 'Packet', hybrid: true });
                 await appendString("Created", newString2);
                 string2 = newString2;
               }
